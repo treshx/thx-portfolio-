@@ -70,7 +70,7 @@ window.portfolioConfig = {
       description: "Uma possibilidade de landing page editorial para apresentar cuidado, informação e contato de forma clara para a visitante.",
       image: "assets/images/cases/dona-nathalia-preview.png",
       imageAlt: "Prévia de projeto demonstrativo de estética com conteúdo editorial em tela de notebook",
-      demoUrl: "https://8899-ivtv5s6winobg7ue7g0ii-06d882e4.us2.manus.computer",
+      demoUrl: "https://sitedonathalia.vercel.app/",
       cta: "Ver demonstração",
       featured: true,
     },
