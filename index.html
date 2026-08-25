@@ -16,44 +16,115 @@
   <body>
     <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
     <div class="site-frame">
-      <header class="site-header" id="topo">
-        <a class="brand" href="#topo" aria-label="THX Portfólio, início">
-          <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
-          <span class="brand-copy"><span class="brand-name" data-brand="shortName">THX</span><span class="brand-tagline" data-brand="tagline">Websites &amp; experiências digitais</span></span>
-        </a>
-        <nav class="desktop-nav" aria-label="Navegação principal" data-nav></nav>
-        <a class="button button--header" data-contact-link href="#contato">Quero uma prévia <span aria-hidden="true">→</span></a>
-        <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-controls="mobile-menu" aria-expanded="false">
-          <span></span><span></span>
-        </button>
-      </header>
+      <div class="site-header-wrap" id="header-wrap">
+        <header class="site-header" id="topo">
+          <a class="brand" href="#topo" aria-label="THX Portfólio, início">
+            <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
+            <span class="brand-copy">
+              <span class="brand-name" data-brand="shortName">THX</span>
+              <span class="brand-tagline" data-brand="tagline">Websites &amp; experiências digitais</span>
+            </span>
+          </a>
 
-      <nav class="mobile-menu" id="mobile-menu" aria-label="Navegação móvel" hidden data-nav></nav>
+          <div class="header-status" aria-label="Disponibilidade para projetos">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span class="status-text">Disponível para novos projetos</span>
+          </div>
+
+          <nav class="desktop-nav" aria-label="Navegação principal" data-nav></nav>
+          
+          <a class="button button--header" data-contact-link href="#contato">
+            <span>Quero uma prévia</span>
+            <svg class="button-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+              <path d="M2.5 7H11.5M11.5 7L7.5 3M11.5 7L7.5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </a>
+
+          <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-controls="mobile-menu" aria-expanded="false">
+            <span></span><span></span>
+          </button>
+        </header>
+      </div>
+
+      <div class="mobile-menu-backdrop" id="menu-backdrop" aria-hidden="true"></div>
+      <div class="mobile-menu-drawer" id="mobile-menu" aria-label="Navegação móvel" hidden>
+        <div class="mobile-menu-inner">
+          <div class="mobile-menu-header">
+            <div class="header-status">
+              <span class="status-dot" aria-hidden="true"></span>
+              <span class="status-text">Disponível para novos projetos</span>
+            </div>
+            <button class="mobile-menu-close" type="button" aria-label="Fechar menu">✕</button>
+          </div>
+          <nav class="mobile-nav-links" data-nav></nav>
+          <div class="mobile-menu-footer">
+            <a class="button button--solid mobile-menu-cta" data-contact-link href="#contato">
+              <span>Solicitar prévia no WhatsApp</span>
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                <path d="M2.5 7H11.5M11.5 7L7.5 3M11.5 7L7.5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
 
       <main id="conteudo">
         <section class="hero section-shell" aria-labelledby="hero-title">
           <div class="hero-copy reveal">
-            <p class="eyebrow" data-hero="eyebrow">Sites que fazem sentido para o seu negócio</p>
+            <div class="hero-eyebrow-wrap">
+              <p class="eyebrow" data-hero="eyebrow">Sites que fazem sentido para o seu negócio</p>
+            </div>
             <h1 id="hero-title" data-hero="title">Seu negócio merece uma presença digital à altura.</h1>
             <p class="hero-text" data-hero="copy">Criamos sites profissionais, rápidos e personalizados para transformar a primeira impressão do seu negócio em uma experiência que transmite confiança.</p>
             <div class="hero-actions">
-              <a class="button button--solid" href="#projetos" data-hero="primaryCta">Ver projetos <span aria-hidden="true">→</span></a>
-              <a class="text-link" href="#contato" data-hero="secondaryCta" data-contact-link>Solicitar uma prévia <span aria-hidden="true">→</span></a>
+              <a class="button button--solid hero-button-primary" href="#projetos" data-hero="primaryCta">
+                <span>Ver projetos</span>
+                <svg class="button-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M2.5 7H11.5M11.5 7L7.5 3M11.5 7L7.5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
+              <a class="text-link hero-button-secondary" href="#contato" data-hero="secondaryCta" data-contact-link>
+                <span>Solicitar uma prévia</span>
+                <svg class="link-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                  <path d="M2.5 7H11.5M11.5 7L7.5 3M11.5 7L7.5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </a>
             </div>
           </div>
+
           <div class="hero-composition reveal" aria-label="Recortes de projetos demonstrativos">
-            <figure class="hero-window hero-window--back">
-              <img src="assets/images/cases/dona-nathalia-preview.png" alt="Prévia de projeto demonstrativo de estética" />
-            </figure>
-            <figure class="hero-window hero-window--front">
-              <img src="assets/images/cases/essenza-preview.png" alt="Prévia de projeto demonstrativo de estética" />
-            </figure>
-            <p class="composition-caption"><span>02</span> projetos demonstrativos<br />para imaginar possibilidades</p>
+            <div class="mockup-window hero-window hero-window--back">
+              <div class="mockup-bar" aria-hidden="true">
+                <div class="mockup-dots"><span></span><span></span><span></span></div>
+                <span class="mockup-url">sitedonathalia.vercel.app</span>
+              </div>
+              <div class="mockup-screen">
+                <img src="assets/images/cases/dona-nathalia-preview.png" alt="Prévia de projeto demonstrativo de estética Dona Nathália" />
+              </div>
+            </div>
+
+            <div class="mockup-window hero-window hero-window--front">
+              <div class="mockup-bar" aria-hidden="true">
+                <div class="mockup-dots"><span></span><span></span><span></span></div>
+                <span class="mockup-url">essenza-estetica.thx.design</span>
+              </div>
+              <div class="mockup-screen">
+                <img src="assets/images/cases/essenza-preview.png" alt="Prévia de projeto demonstrativo de estética Essenza" />
+              </div>
+            </div>
+
+            <div class="hero-badge">
+              <span class="hero-badge-number">02</span>
+              <p class="hero-badge-copy"><strong>Projetos demonstrativos</strong><span>prontos para navegar</span></p>
+            </div>
           </div>
         </section>
 
         <section class="section-shell intro-strip reveal" aria-label="Proposta do portfólio">
-          <p>Uma presença digital bem resolvida não começa pela tecnologia. Começa por entender o que o seu negócio precisa transmitir.</p>
+          <div class="intro-strip-inner">
+            <span class="intro-strip-accent" aria-hidden="true">“</span>
+            <p>Uma presença digital bem resolvida não começa pela tecnologia. Começa por entender o que o seu negócio precisa transmitir.</p>
+          </div>
         </section>
 
         <section class="section-shell projects" id="projetos" aria-labelledby="projects-title">
@@ -74,7 +145,9 @@
         <section class="section-shell benefits" id="sobre" aria-labelledby="benefits-title">
           <div class="section-heading section-heading--narrow reveal">
             <p class="section-index">02 <span>O que entregamos</span></p>
-            <div><h2 id="benefits-title">O essencial para uma primeira impressão que funciona.</h2></div>
+            <div>
+              <h2 id="benefits-title">O essencial para uma primeira impressão que funciona.</h2>
+            </div>
           </div>
           <div class="benefit-grid" data-benefits></div>
         </section>
@@ -101,40 +174,80 @@
 
         <section class="section-shell commercial-cta" id="contato" aria-labelledby="cta-title">
           <div class="commercial-cta-card reveal">
+            <div class="commercial-cta-badge">
+              <span class="status-dot" aria-hidden="true"></span>
+              <span>Atendimento Direto</span>
+            </div>
             <p class="section-index">04 <span>Uma prévia para começar</span></p>
             <h2 id="cta-title">Quer ver como seu negócio poderia ficar?</h2>
             <p>Podemos criar uma prévia visual baseada no seu negócio para você conhecer a ideia antes de decidir.</p>
-            <a class="button button--solid" data-contact-link href="#contato">Quero uma prévia <span aria-hidden="true">→</span></a>
+            <a class="button button--solid button--large" data-contact-link href="#contato">
+              <span>Quero uma prévia no WhatsApp</span>
+              <svg class="button-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3.33334 8H12.6667M12.6667 8L8.66668 4M12.6667 8L8.66668 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
             <small data-contact-note>Canal de contato em configuração — antes de publicar, defina o WhatsApp oficial da THX neste arquivo.</small>
           </div>
         </section>
 
         <section class="section-shell faq" id="faq" aria-labelledby="faq-title">
           <div class="section-heading reveal">
-            <p class="section-index">05 <span>Perguntas</span></p>
-            <div><h2 id="faq-title">O que normalmente vem antes da decisão.</h2></div>
+            <p class="section-index">05 <span>Perguntas frequentes</span></p>
+            <div>
+              <h2 id="faq-title">O que normalmente vem antes da decisão.</h2>
+            </div>
           </div>
-          <div class="faq-list reveal" data-faq></div>
+          <div class="faq-list" data-faq></div>
         </section>
 
         <section class="final-cta" aria-labelledby="final-title">
           <div class="section-shell final-cta-inner reveal">
             <p class="eyebrow" data-brand="shortName">THX</p>
             <h2 id="final-title">Vamos criar uma presença digital que tenha a cara do seu negócio.</h2>
-            <a class="button button--inverse" data-contact-link href="#contato">Falar sobre meu projeto <span aria-hidden="true">→</span></a>
+            <a class="button button--inverse button--large" data-contact-link href="#contato">
+              <span>Falar sobre meu projeto</span>
+              <svg class="button-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3.33334 8H12.6667M12.6667 8L8.66668 4M12.6667 8L8.66668 12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </a>
           </div>
         </section>
       </main>
 
       <footer class="site-footer section-shell">
         <div class="footer-brand">
-          <a class="brand" href="#topo"><span class="brand-mark" aria-hidden="true"><i></i><i></i></span><span class="brand-copy"><span class="brand-name" data-brand="shortName">THX</span><span class="brand-tagline" data-brand="tagline">Websites &amp; experiências digitais</span></span></a>
+          <a class="brand" href="#topo">
+            <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
+            <span class="brand-copy">
+              <span class="brand-name" data-brand="shortName">THX</span>
+              <span class="brand-tagline" data-brand="tagline">Websites &amp; experiências digitais</span>
+            </span>
+          </a>
           <p data-footer="note">Websites e experiências digitais para negócios que querem comunicar com mais clareza.</p>
         </div>
-        <nav class="footer-nav" aria-label="Navegação do rodapé"><a href="#projetos">Projetos</a><a href="#como-funciona">Como funciona</a><a href="#contato">Contato</a></nav>
+        <nav class="footer-nav" aria-label="Navegação do rodapé">
+          <a href="#projetos">Projetos</a>
+          <a href="#sobre">O que entregamos</a>
+          <a href="#como-funciona">Como funciona</a>
+          <a href="#faq">FAQ</a>
+          <a href="#contato">Contato</a>
+        </nav>
         <p class="copyright" data-footer="copyright">© 2026 THX Portfólio. Apresentação comercial.</p>
       </footer>
     </div>
+
+    <!-- Botão Flutuante de Contato Rápido (WhatsApp) -->
+    <aside class="floating-cta" id="floating-cta" aria-label="Atendimento rápido via WhatsApp">
+      <a class="floating-cta-button" data-contact-link href="#contato" aria-label="Falar com a THX no WhatsApp">
+        <span class="floating-cta-ping" aria-hidden="true"></span>
+        <svg class="whatsapp-icon" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M17.472 14.382c-.301-.15-1.78-.877-2.056-.977-.276-.1-.477-.15-.678.15-.2.301-.777.978-.953 1.179-.176.2-.351.226-.652.075s-1.274-.47-2.428-1.498c-.898-.799-1.504-1.788-1.68-2.089-.176-.301-.019-.464.132-.614.136-.135.301-.351.452-.527.15-.176.2-.301.301-.502.1-.2.05-.376-.025-.526-.075-.15-.678-1.631-.929-2.235-.244-.588-.492-.508-.678-.517-.176-.009-.376-.009-.577-.009s-.527.075-.803.376c-.276.301-1.054 1.029-1.054 2.509 0 1.48 1.079 2.909 1.23 3.11.15.2 2.124 3.244 5.147 4.551.719.311 1.28.497 1.718.636.722.23 1.378.197 1.898.12.579-.087 1.78-.727 2.031-1.43.251-.703.251-1.305.176-1.43-.075-.125-.276-.201-.577-.351zM12.04 2c-5.523 0-10 4.477-10 10 0 1.766.459 3.425 1.261 4.872L2 22l5.281-1.226C8.683 21.57 10.312 22 12.04 22c5.523 0 10-4.477 10-10s-4.477-10-10-10z"/>
+        </svg>
+        <span class="floating-cta-label">Falar no WhatsApp</span>
+      </a>
+    </aside>
+
     <noscript><p class="noscript">Ative o JavaScript para visualizar as informações atualizadas do portfólio.</p></noscript>
     <script src="assets/js/portfolio.config.js"></script>
     <script src="assets/js/app.js"></script>
