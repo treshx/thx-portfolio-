@@ -421,6 +421,7 @@
         var dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
         var time = 0;
         var step = 10;
+        var inverseStep = 0;
         var sampleXs = [];
         var nodeGlowCanvas = /** @type {HTMLCanvasElement|null} */ (null);
         var fullCircle = Math.PI * 2;
@@ -430,6 +431,7 @@
 
         var buildSamples = function () {
           step = isMobile ? (width < 680 ? 18 : 16) : (width < 680 ? 14 : 10);
+          if (isMobile) inverseStep = 1 / step;
           sampleXs = [];
           for (var x = 0; x <= width + step; x += step) {
             sampleXs.push(x);
@@ -500,6 +502,8 @@
             };
 
             if (isMobile) {
+              curve.hasNode = i >= 1 && i <= 10 && (i - 1) % 3 === 0;
+              curve.nodeSpeed *= 0.75;
               curve.baseSamples = new Float32Array(sampleXs.length);
               curve.waveSamples1 = new Float32Array(sampleXs.length);
               curve.waveSamples2 = new Float32Array(sampleXs.length);
@@ -560,8 +564,14 @@
             var nodeY = 0;
             var targetNodeX = curve.nodeProgress * width;
             var nodeSampleIndex = -1;
+            var nodeNextSampleIndex = -1;
+            var nodeSampleProgress = 0;
+            var nodeSampleY = 0;
+            var nodeNextSampleY = 0;
             if (isMobile && curve.hasNode && targetNodeX >= 0 && targetNodeX <= width + step) {
-              nodeSampleIndex = Math.min(sampleXs.length - 1, Math.round(targetNodeX / step));
+              nodeSampleIndex = Math.min(sampleXs.length - 1, Math.floor(targetNodeX * inverseStep));
+              nodeNextSampleIndex = Math.min(sampleXs.length - 1, nodeSampleIndex + 1);
+              nodeSampleProgress = (targetNodeX - sampleXs[nodeSampleIndex]) * inverseStep;
             }
 
             for (var sampleIndex = 0; sampleIndex < sampleXs.length; sampleIndex++) {
@@ -588,11 +598,18 @@
                 ctx.lineTo(x, y);
               }
 
-              if ((isMobile && sampleIndex === nodeSampleIndex) ||
-                  (!isMobile && curve.hasNode && Math.abs(x - targetNodeX) <= step)) {
+              if (isMobile && curve.hasNode) {
+                if (sampleIndex === nodeSampleIndex) nodeSampleY = y;
+                if (sampleIndex === nodeNextSampleIndex) nodeNextSampleY = y;
+              } else if (curve.hasNode && Math.abs(x - targetNodeX) <= step) {
                 nodeX = x;
                 nodeY = y;
               }
+            }
+
+            if (isMobile && nodeSampleIndex >= 0) {
+              nodeX = targetNodeX;
+              nodeY = nodeSampleY + (nodeNextSampleY - nodeSampleY) * nodeSampleProgress;
             }
             ctx.stroke();
 
