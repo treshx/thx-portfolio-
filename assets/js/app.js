@@ -400,6 +400,174 @@
     }
   }
 
+  function setupIntro() {
+    var intro = /** @type {HTMLElement|null} */ (document.getElementById("intro-screen"));
+    var canvas = /** @type {HTMLCanvasElement|null} */ (document.getElementById("intro-canvas"));
+    if (!intro) return;
+
+    var isReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var rafId = 0;
+
+    if (canvas && canvas.getContext) {
+      var ctx = canvas.getContext("2d");
+      if (ctx) {
+        var width = window.innerWidth;
+        var height = window.innerHeight;
+        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var time = 0;
+
+        /** @type {Array<{baseY: number, slant: number, freq1: number, freq2: number, freq3: number, amp1: number, amp2: number, amp3: number, speed1: number, speed2: number, speed3: number, phase1: number, phase2: number, phase3: number, color: string, lineWidth: number, hasNode: boolean, nodeProgress: number, nodeSpeed: number}>} */
+        var curves = [];
+
+        var initCurves = function () {
+          var count = width < 680 ? 12 : 20;
+          curves = [];
+          for (var i = 0; i < count; i++) {
+            var progress = i / (count - 1);
+            var isAccent = (i % 3 === 0);
+            var isHighlight = (i % 5 === 0);
+
+            var color = "rgba(46, 16, 101, 0.48)";
+            var widthVal = 0.9;
+            if (isHighlight) {
+              color = "rgba(167, 139, 250, 0.88)";
+              widthVal = 1.4;
+            } else if (isAccent) {
+              color = "rgba(124, 58, 237, 0.68)";
+              widthVal = 1.1;
+            }
+
+            curves.push({
+              baseY: height * (0.05 + progress * 0.9),
+              slant: (progress - 0.5) * (height * 0.18),
+              freq1: 0.0016 + (i % 4) * 0.0004,
+              freq2: 0.0032 + (i % 3) * 0.0006,
+              freq3: 0.0008 + (i % 2) * 0.0003,
+              amp1: 22 + (i % 3) * 12,
+              amp2: 12 + (i % 4) * 8,
+              amp3: 28 + (i % 5) * 10,
+              speed1: 0.004 + (i % 3) * 0.0012,
+              speed2: -0.003 - (i % 2) * 0.001,
+              speed3: 0.002 + (i % 4) * 0.0008,
+              phase1: i * 0.55,
+              phase2: i * 0.9,
+              phase3: i * 0.35,
+              color: color,
+              lineWidth: widthVal,
+              hasNode: (i % 4 === 1 || i % 4 === 2),
+              nodeProgress: (i * 0.23) % 1,
+              nodeSpeed: 0.0015 + (i % 3) * 0.0008
+            });
+          }
+        };
+
+        var resize = function () {
+          if (!canvas || !ctx) return;
+          width = window.innerWidth;
+          height = window.innerHeight;
+          dpr = Math.min(window.devicePixelRatio || 1, 2);
+          canvas.width = Math.floor(width * dpr);
+          canvas.height = Math.floor(height * dpr);
+          canvas.style.width = width + "px";
+          canvas.style.height = height + "px";
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          initCurves();
+        };
+
+        resize();
+        window.addEventListener("resize", resize, { passive: true });
+
+        var render = function () {
+          if (!ctx || !canvas) return;
+          ctx.clearRect(0, 0, width, height);
+
+          time += 1;
+
+          var step = width < 680 ? 14 : 10;
+
+          for (var c = 0; c < curves.length; c++) {
+            var curve = curves[c];
+            ctx.beginPath();
+            ctx.strokeStyle = curve.color;
+            ctx.lineWidth = curve.lineWidth;
+
+            var nodeX = 0;
+            var nodeY = 0;
+            var targetNodeX = curve.nodeProgress * width;
+
+            for (var x = 0; x <= width + step; x += step) {
+              var xProgress = x / width;
+              var y = curve.baseY +
+                curve.slant * (xProgress - 0.5) +
+                Math.sin(x * curve.freq1 + time * curve.speed1 + curve.phase1) * curve.amp1 +
+                Math.cos(x * curve.freq2 + time * curve.speed2 + curve.phase2) * curve.amp2 +
+                Math.sin((x * 0.4 + curve.baseY) * curve.freq3 + time * curve.speed3 + curve.phase3) * curve.amp3;
+
+              if (x === 0) {
+                ctx.moveTo(x, y);
+              } else {
+                ctx.lineTo(x, y);
+              }
+
+              if (curve.hasNode && Math.abs(x - targetNodeX) <= step) {
+                nodeX = x;
+                nodeY = y;
+              }
+            }
+            ctx.stroke();
+
+            // Desenho sutil de pontos de energia (nós luminosos na linha)
+            if (curve.hasNode && nodeX > 0) {
+              ctx.beginPath();
+              ctx.arc(nodeX, nodeY, 2, 0, Math.PI * 2);
+              ctx.fillStyle = "rgba(196, 181, 253, 0.98)";
+              ctx.shadowColor = "rgba(139, 92, 246, 0.85)";
+              ctx.shadowBlur = 8;
+              ctx.fill();
+              ctx.shadowBlur = 0;
+
+              curve.nodeProgress += curve.nodeSpeed;
+              if (curve.nodeProgress > 1.05) {
+                curve.nodeProgress = -0.05;
+              }
+            }
+          }
+
+          if (!isReduced) {
+            rafId = requestAnimationFrame(render);
+          }
+        };
+
+        if (isReduced) {
+          render();
+        } else {
+          rafId = requestAnimationFrame(render);
+        }
+      }
+    }
+
+    var liftDelay = isReduced ? 200 : 1800;
+    var finishDelay = liftDelay + (isReduced ? 300 : 900);
+
+    if (document.body) document.body.style.overflow = "hidden";
+
+    setTimeout(function () {
+      if (intro) intro.classList.add("is-lifting");
+    }, liftDelay);
+
+    setTimeout(function () {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+      if (intro) {
+        intro.hidden = true;
+        intro.style.display = "none";
+      }
+      if (document.body) document.body.style.overflow = "";
+    }, finishDelay);
+  }
+
   applyTheme();
   applyMeta();
   renderNavigation();
@@ -412,5 +580,5 @@
   setupMenu();
   setupFaq();
   setupReveals();
+  setupIntro();
 })();
-
