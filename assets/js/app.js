@@ -406,21 +406,61 @@
     if (!intro) return;
 
     var isReduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var isMobile = window.matchMedia && window.matchMedia("(max-width: 1024px) and (hover: none) and (pointer: coarse)").matches;
     var rafId = 0;
+    var resizeRafId = 0;
+    var introFinished = false;
+    var resizeHandler = null;
+    var visibilityHandler = null;
 
     if (canvas && canvas.getContext) {
       var ctx = canvas.getContext("2d");
       if (ctx) {
         var width = window.innerWidth;
         var height = window.innerHeight;
-        var dpr = Math.min(window.devicePixelRatio || 1, 2);
+        var dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
         var time = 0;
+        var step = 10;
+        var sampleXs = [];
+        var nodeGlowCanvas = /** @type {HTMLCanvasElement|null} */ (null);
+        var fullCircle = Math.PI * 2;
 
-        /** @type {Array<{baseY: number, slant: number, freq1: number, freq2: number, freq3: number, amp1: number, amp2: number, amp3: number, speed1: number, speed2: number, speed3: number, phase1: number, phase2: number, phase3: number, color: string, lineWidth: number, hasNode: boolean, nodeProgress: number, nodeSpeed: number}>} */
+        /** @type {Array<any>} */
         var curves = [];
 
+        var buildSamples = function () {
+          step = isMobile ? (width < 680 ? 18 : 16) : (width < 680 ? 14 : 10);
+          sampleXs = [];
+          for (var x = 0; x <= width + step; x += step) {
+            sampleXs.push(x);
+          }
+        };
+
+        var buildNodeGlow = function () {
+          if (!isMobile) return;
+
+          var glowSize = 28;
+          nodeGlowCanvas = document.createElement("canvas");
+          nodeGlowCanvas.width = Math.ceil(glowSize * dpr);
+          nodeGlowCanvas.height = Math.ceil(glowSize * dpr);
+
+          var glowCtx = nodeGlowCanvas.getContext("2d");
+          if (!glowCtx) {
+            nodeGlowCanvas = null;
+            return;
+          }
+
+          glowCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          glowCtx.fillStyle = "rgba(196, 181, 253, 0.98)";
+          glowCtx.shadowColor = "rgba(139, 92, 246, 0.85)";
+          glowCtx.shadowBlur = 8;
+          glowCtx.beginPath();
+          glowCtx.arc(glowSize / 2, glowSize / 2, 2, 0, fullCircle);
+          glowCtx.fill();
+        };
+
         var initCurves = function () {
-          var count = width < 680 ? 12 : 20;
+          var count = isMobile ? (width < 680 ? 10 : 14) : (width < 680 ? 12 : 20);
           curves = [];
           for (var i = 0; i < count; i++) {
             var progress = i / (count - 1);
@@ -437,7 +477,7 @@
               widthVal = 1.1;
             }
 
-            curves.push({
+            var curve = {
               baseY: height * (0.05 + progress * 0.9),
               slant: (progress - 0.5) * (height * 0.18),
               freq1: 0.0016 + (i % 4) * 0.0004,
@@ -457,7 +497,24 @@
               hasNode: (i % 4 === 1 || i % 4 === 2),
               nodeProgress: (i * 0.23) % 1,
               nodeSpeed: 0.0015 + (i % 3) * 0.0008
-            });
+            };
+
+            if (isMobile) {
+              curve.baseSamples = new Float32Array(sampleXs.length);
+              curve.waveSamples1 = new Float32Array(sampleXs.length);
+              curve.waveSamples2 = new Float32Array(sampleXs.length);
+              curve.waveSamples3 = new Float32Array(sampleXs.length);
+
+              for (var sampleIndex = 0; sampleIndex < sampleXs.length; sampleIndex++) {
+                var sampleX = sampleXs[sampleIndex];
+                curve.baseSamples[sampleIndex] = curve.baseY + curve.slant * (sampleX / width - 0.5);
+                curve.waveSamples1[sampleIndex] = sampleX * curve.freq1 + curve.phase1;
+                curve.waveSamples2[sampleIndex] = sampleX * curve.freq2 + curve.phase2;
+                curve.waveSamples3[sampleIndex] = (sampleX * 0.4 + curve.baseY) * curve.freq3 + curve.phase3;
+              }
+            }
+
+            curves.push(curve);
           }
         };
 
@@ -465,25 +522,33 @@
           if (!canvas || !ctx) return;
           width = window.innerWidth;
           height = window.innerHeight;
-          dpr = Math.min(window.devicePixelRatio || 1, 2);
+          dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
           canvas.width = Math.floor(width * dpr);
           canvas.height = Math.floor(height * dpr);
           canvas.style.width = width + "px";
           canvas.style.height = height + "px";
           ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+          buildSamples();
+          buildNodeGlow();
           initCurves();
         };
 
         resize();
-        window.addEventListener("resize", resize, { passive: true });
+        resizeHandler = function () {
+          if (resizeRafId || introFinished) return;
+          resizeRafId = requestAnimationFrame(function () {
+            resizeRafId = 0;
+            resize();
+          });
+        };
+        window.addEventListener("resize", resizeHandler, { passive: true });
 
         var render = function () {
+          rafId = 0;
           if (!ctx || !canvas) return;
           ctx.clearRect(0, 0, width, height);
 
           time += 1;
-
-          var step = width < 680 ? 14 : 10;
 
           for (var c = 0; c < curves.length; c++) {
             var curve = curves[c];
@@ -494,22 +559,37 @@
             var nodeX = 0;
             var nodeY = 0;
             var targetNodeX = curve.nodeProgress * width;
+            var nodeSampleIndex = -1;
+            if (isMobile && curve.hasNode && targetNodeX >= 0 && targetNodeX <= width + step) {
+              nodeSampleIndex = Math.min(sampleXs.length - 1, Math.round(targetNodeX / step));
+            }
 
-            for (var x = 0; x <= width + step; x += step) {
-              var xProgress = x / width;
-              var y = curve.baseY +
-                curve.slant * (xProgress - 0.5) +
-                Math.sin(x * curve.freq1 + time * curve.speed1 + curve.phase1) * curve.amp1 +
-                Math.cos(x * curve.freq2 + time * curve.speed2 + curve.phase2) * curve.amp2 +
-                Math.sin((x * 0.4 + curve.baseY) * curve.freq3 + time * curve.speed3 + curve.phase3) * curve.amp3;
+            for (var sampleIndex = 0; sampleIndex < sampleXs.length; sampleIndex++) {
+              var x = sampleXs[sampleIndex];
+              var y;
 
-              if (x === 0) {
+              if (isMobile) {
+                y = curve.baseSamples[sampleIndex] +
+                  Math.sin(curve.waveSamples1[sampleIndex] + time * curve.speed1) * curve.amp1 +
+                  Math.cos(curve.waveSamples2[sampleIndex] + time * curve.speed2) * curve.amp2 +
+                  Math.sin(curve.waveSamples3[sampleIndex] + time * curve.speed3) * curve.amp3;
+              } else {
+                var xProgress = x / width;
+                y = curve.baseY +
+                  curve.slant * (xProgress - 0.5) +
+                  Math.sin(x * curve.freq1 + time * curve.speed1 + curve.phase1) * curve.amp1 +
+                  Math.cos(x * curve.freq2 + time * curve.speed2 + curve.phase2) * curve.amp2 +
+                  Math.sin((x * 0.4 + curve.baseY) * curve.freq3 + time * curve.speed3 + curve.phase3) * curve.amp3;
+              }
+
+              if (sampleIndex === 0) {
                 ctx.moveTo(x, y);
               } else {
                 ctx.lineTo(x, y);
               }
 
-              if (curve.hasNode && Math.abs(x - targetNodeX) <= step) {
+              if ((isMobile && sampleIndex === nodeSampleIndex) ||
+                  (!isMobile && curve.hasNode && Math.abs(x - targetNodeX) <= step)) {
                 nodeX = x;
                 nodeY = y;
               }
@@ -518,13 +598,17 @@
 
             // Desenho sutil de pontos de energia (nós luminosos na linha)
             if (curve.hasNode && nodeX > 0) {
-              ctx.beginPath();
-              ctx.arc(nodeX, nodeY, 2, 0, Math.PI * 2);
-              ctx.fillStyle = "rgba(196, 181, 253, 0.98)";
-              ctx.shadowColor = "rgba(139, 92, 246, 0.85)";
-              ctx.shadowBlur = 8;
-              ctx.fill();
-              ctx.shadowBlur = 0;
+              if (isMobile && nodeGlowCanvas) {
+                ctx.drawImage(nodeGlowCanvas, nodeX - 14, nodeY - 14, 28, 28);
+              } else {
+                ctx.beginPath();
+                ctx.arc(nodeX, nodeY, 2, 0, fullCircle);
+                ctx.fillStyle = "rgba(196, 181, 253, 0.98)";
+                ctx.shadowColor = "rgba(139, 92, 246, 0.85)";
+                ctx.shadowBlur = 8;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+              }
 
               curve.nodeProgress += curve.nodeSpeed;
               if (curve.nodeProgress > 1.05) {
@@ -533,10 +617,22 @@
             }
           }
 
-          if (!isReduced) {
+          if (!isReduced && !introFinished && !document.hidden) {
             rafId = requestAnimationFrame(render);
           }
         };
+
+        visibilityHandler = function () {
+          if (document.hidden) {
+            if (rafId) {
+              cancelAnimationFrame(rafId);
+              rafId = 0;
+            }
+          } else if (!isReduced && !introFinished && !rafId) {
+            rafId = requestAnimationFrame(render);
+          }
+        };
+        document.addEventListener("visibilitychange", visibilityHandler);
 
         if (isReduced) {
           render();
@@ -556,10 +652,17 @@
     }, liftDelay);
 
     setTimeout(function () {
+      introFinished = true;
       if (rafId) {
         cancelAnimationFrame(rafId);
         rafId = 0;
       }
+      if (resizeRafId) {
+        cancelAnimationFrame(resizeRafId);
+        resizeRafId = 0;
+      }
+      if (resizeHandler) window.removeEventListener("resize", resizeHandler);
+      if (visibilityHandler) document.removeEventListener("visibilitychange", visibilityHandler);
       if (intro) {
         intro.hidden = true;
         intro.style.display = "none";

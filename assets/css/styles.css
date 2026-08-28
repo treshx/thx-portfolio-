@@ -247,6 +247,45 @@ button {
   }
 }
 
+/* Mobile: evita filtros e tracking animados durante a renderizacao do canvas. */
+@media (max-width: 1024px) and (hover: none) and (pointer: coarse) {
+  .intro-title {
+    filter: none;
+    animation-name: introTitleRevealMobile;
+    will-change: transform, opacity;
+  }
+
+  .intro-tagline {
+    animation-name: introTaglineRevealMobile;
+    will-change: transform, opacity;
+  }
+
+  @keyframes introTitleRevealMobile {
+    0% {
+      opacity: 0;
+      transform: translateY(28px) scale(0.96);
+    }
+    60% {
+      opacity: 0.85;
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes introTaglineRevealMobile {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
 /* ==========================================================================
    HEADER FIXO / FLUTUANTE (GLASSMORPHISM ELEGANTE)
    ========================================================================== */
