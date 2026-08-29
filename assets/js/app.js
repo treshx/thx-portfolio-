@@ -72,44 +72,6 @@
     }
   }
 
-  function renderProjects() {
-    var target = document.querySelector("[data-projects]");
-    if (!target || !config.projects) return;
-
-    var html = config.projects.map(function (/** @type {any} */ project, /** @type {number} */ idx) {
-      return [
-        '<article class="case reveal" data-project-id="' + escapeHtml(project.id) + '" style="--stagger-idx: ' + idx + '">',
-        '  <a class="case-media mockup-window" href="' + escapeHtml(project.demoUrl) + '" target="_blank" rel="noopener" aria-label="Abrir demonstração de ' + escapeHtml(project.name) + '">',
-        '    <div class="mockup-bar" aria-hidden="true">',
-        '      <div class="mockup-dots"><span></span><span></span><span></span></div>',
-        '      <span class="mockup-url">' + escapeHtml(project.id) + '.thx.demo</span>',
-        '      <span class="mockup-action">Ver Demo ↗</span>',
-        '    </div>',
-        '    <div class="mockup-screen">',
-        '      <img src="' + escapeHtml(project.image) + '" alt="' + escapeHtml(project.imageAlt) + '" loading="lazy" />',
-        '    </div>',
-        '  </a>',
-        '  <div class="case-copy">',
-        '    <div class="case-tags">',
-        '      <span class="case-tag">' + escapeHtml(project.number) + '</span>',
-        '      <span class="case-tag case-tag--category">' + escapeHtml(project.category) + '</span>',
-        '    </div>',
-        '    <h3>' + escapeHtml(project.name) + '</h3>',
-        '    <p>' + escapeHtml(project.description) + '</p>',
-        '    <a class="case-link" href="' + escapeHtml(project.demoUrl) + '" target="_blank" rel="noopener">',
-        '      <span>' + escapeHtml(project.cta) + '</span>',
-        '      <svg class="arrow-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">',
-        '        <path d="M2.5 7H11.5M11.5 7L7.5 3M11.5 7L7.5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>',
-        '      </svg>',
-        '    </a>',
-        '  </div>',
-        '</article>'
-      ].join("\n");
-    }).join("");
-
-    target.innerHTML = html;
-  }
-
   var benefitIcons = [
     '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>',
     '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="3" ry="3"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>',
@@ -453,6 +415,194 @@
     for (var k = 0; k < items.length; k++) {
       observer.observe(items[k]);
     }
+  }
+
+  function setupPossibilities() {
+    var section = /** @type {HTMLElement|null} */ (document.querySelector("[data-possibilities]"));
+    var story = /** @type {HTMLElement|null} */ (document.querySelector("[data-possibility-story]"));
+    var stage = /** @type {HTMLElement|null} */ (document.querySelector("[data-possibility-stage]"));
+    if (!section || !story || !stage || !window.matchMedia) return;
+
+    var panels = /** @type {NodeListOf<HTMLElement>} */ (section.querySelectorAll("[data-possibility-panel]"));
+    var indexItems = /** @type {NodeListOf<HTMLElement>} */ (section.querySelectorAll("[data-possibility-index]"));
+    var exploreButtons = /** @type {NodeListOf<HTMLButtonElement>} */ (section.querySelectorAll(".possibility-explore"));
+    var previews = /** @type {NodeListOf<HTMLElement>} */ (section.querySelectorAll(".possibility-preview"));
+    if (!panels.length) return;
+
+    var desktopQuery = window.matchMedia(
+      "(min-width: 1100px) and (min-height: 680px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)"
+    );
+    var enhanced = false;
+    var activeIndex = 0;
+    var frameId = 0;
+    var needsMeasure = true;
+    var latestScrollY = window.scrollY || window.pageYOffset || 0;
+    var storyStart = 0;
+    var storyRange = 1;
+    var pointerBounds = /** @type {DOMRect|null} */ (null);
+    var targetTiltX = 0;
+    var targetTiltY = 0;
+    var targetParallaxX = 0;
+    var targetParallaxY = 0;
+    var currentTiltX = 0;
+    var currentTiltY = 0;
+    var currentParallaxX = 0;
+    var currentParallaxY = 0;
+    var activePreview = /** @type {HTMLElement|null} */ (null);
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function clearPreviewStyles(preview) {
+      preview.style.removeProperty("--possibility-tilt-x");
+      preview.style.removeProperty("--possibility-tilt-y");
+      preview.style.removeProperty("--possibility-parallax-x");
+      preview.style.removeProperty("--possibility-parallax-y");
+      preview.style.removeProperty("--possibility-light-x");
+      preview.style.removeProperty("--possibility-light-y");
+    }
+
+    function setActive(nextIndex) {
+      if (activePreview) clearPreviewStyles(activePreview);
+      activeIndex = clamp(nextIndex, 0, panels.length - 1);
+      for (var i = 0; i < panels.length; i++) {
+        var isActive = i === activeIndex;
+        panels[i].classList.toggle("is-active", isActive);
+        panels[i].classList.toggle("is-before", i < activeIndex);
+        panels[i].classList.toggle("is-after", i > activeIndex);
+        panels[i].setAttribute("aria-hidden", isActive ? "false" : "true");
+        if (exploreButtons[i]) exploreButtons[i].tabIndex = isActive ? 0 : -1;
+        if (indexItems[i]) {
+          indexItems[i].classList.toggle("is-active", isActive);
+          if (isActive) {
+            indexItems[i].setAttribute("aria-current", "step");
+          } else {
+            indexItems[i].removeAttribute("aria-current");
+          }
+        }
+      }
+      activePreview = previews[activeIndex] || null;
+    }
+
+    function exposeAllPanels() {
+      for (var i = 0; i < panels.length; i++) {
+        panels[i].classList.remove("is-before", "is-after");
+        panels[i].setAttribute("aria-hidden", "false");
+        if (exploreButtons[i]) exploreButtons[i].tabIndex = 0;
+        if (indexItems[i]) indexItems[i].removeAttribute("aria-current");
+      }
+    }
+
+    function measure() {
+      var rect = story.getBoundingClientRect();
+      var headerOffset = 72;
+      storyStart = rect.top + latestScrollY - headerOffset;
+      storyRange = Math.max(story.offsetHeight - window.innerHeight + headerOffset, 1);
+      pointerBounds = null;
+      needsMeasure = false;
+    }
+
+    function schedulePaint() {
+      if (!frameId) frameId = requestAnimationFrame(paint);
+    }
+
+    function paint() {
+      frameId = 0;
+      if (!enhanced) return;
+      if (needsMeasure) measure();
+
+      var progress = clamp((latestScrollY - storyStart) / storyRange, 0, 1);
+      var nextIndex = Math.min(panels.length - 1, Math.floor(progress * panels.length));
+      if (nextIndex !== activeIndex) setActive(nextIndex);
+      section.style.setProperty("--possibility-progress", progress.toFixed(4));
+
+      currentTiltX += (targetTiltX - currentTiltX) * 0.16;
+      currentTiltY += (targetTiltY - currentTiltY) * 0.16;
+      currentParallaxX += (targetParallaxX - currentParallaxX) * 0.16;
+      currentParallaxY += (targetParallaxY - currentParallaxY) * 0.16;
+
+      if (activePreview) {
+        activePreview.style.setProperty("--possibility-tilt-x", currentTiltX.toFixed(3) + "deg");
+        activePreview.style.setProperty("--possibility-tilt-y", currentTiltY.toFixed(3) + "deg");
+        activePreview.style.setProperty("--possibility-parallax-x", currentParallaxX.toFixed(2) + "px");
+        activePreview.style.setProperty("--possibility-parallax-y", currentParallaxY.toFixed(2) + "px");
+        activePreview.style.setProperty("--possibility-light-x", (50 + currentParallaxX * 3).toFixed(2) + "%");
+        activePreview.style.setProperty("--possibility-light-y", (50 + currentParallaxY * 3).toFixed(2) + "%");
+      }
+
+      if (Math.abs(targetTiltX - currentTiltX) > 0.01 ||
+          Math.abs(targetTiltY - currentTiltY) > 0.01 ||
+          Math.abs(targetParallaxX - currentParallaxX) > 0.03 ||
+          Math.abs(targetParallaxY - currentParallaxY) > 0.03) {
+        schedulePaint();
+      }
+    }
+
+    function updateMode() {
+      enhanced = desktopQuery.matches;
+      section.classList.toggle("is-enhanced", enhanced);
+      latestScrollY = window.scrollY || window.pageYOffset || 0;
+      needsMeasure = true;
+
+      if (enhanced) {
+        setActive(activeIndex);
+        schedulePaint();
+      } else {
+        exposeAllPanels();
+        targetTiltX = targetTiltY = targetParallaxX = targetParallaxY = 0;
+        currentTiltX = currentTiltY = currentParallaxX = currentParallaxY = 0;
+        activePreview = null;
+        for (var i = 0; i < previews.length; i++) clearPreviewStyles(previews[i]);
+        if (frameId) {
+          cancelAnimationFrame(frameId);
+          frameId = 0;
+        }
+      }
+    }
+
+    window.addEventListener("scroll", function () {
+      if (!enhanced) return;
+      latestScrollY = window.scrollY || window.pageYOffset || 0;
+      schedulePaint();
+    }, { passive: true });
+
+    window.addEventListener("resize", function () {
+      latestScrollY = window.scrollY || window.pageYOffset || 0;
+      needsMeasure = true;
+      if (enhanced) schedulePaint();
+    }, { passive: true });
+
+    stage.addEventListener("pointerenter", function () {
+      if (!enhanced) return;
+      pointerBounds = stage.getBoundingClientRect();
+    }, { passive: true });
+
+    stage.addEventListener("pointermove", function (event) {
+      if (!enhanced) return;
+      if (!pointerBounds) pointerBounds = stage.getBoundingClientRect();
+      var normalizedX = clamp(((event.clientX - pointerBounds.left) / pointerBounds.width) * 2 - 1, -1, 1);
+      var normalizedY = clamp(((event.clientY - pointerBounds.top) / pointerBounds.height) * 2 - 1, -1, 1);
+      targetTiltX = normalizedY * -1.05;
+      targetTiltY = normalizedX * 1.35;
+      targetParallaxX = normalizedX * 5;
+      targetParallaxY = normalizedY * 4;
+      schedulePaint();
+    }, { passive: true });
+
+    stage.addEventListener("pointerleave", function () {
+      pointerBounds = null;
+      targetTiltX = targetTiltY = targetParallaxX = targetParallaxY = 0;
+      if (enhanced) schedulePaint();
+    }, { passive: true });
+
+    if (desktopQuery.addEventListener) {
+      desktopQuery.addEventListener("change", updateMode);
+    } else if (desktopQuery.addListener) {
+      desktopQuery.addListener(updateMode);
+    }
+
+    updateMode();
   }
 
   function setupHeroPointer() {
@@ -832,7 +982,6 @@
   applyTheme();
   applyMeta();
   renderNavigation();
-  renderProjects();
   renderBenefits();
   renderProcess();
   renderFaq();
@@ -841,6 +990,7 @@
   setupMenu();
   setupFaq();
   setupReveals();
+  setupPossibilities();
   setupHeroPointer();
   setupIntro();
 })();
