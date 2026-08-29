@@ -31,22 +31,13 @@
       <div class="site-header-wrap" id="header-wrap">
         <header class="site-header" id="topo">
           <a class="brand" href="#topo" aria-label="THX Portfólio, início">
-            <span class="brand-mark" aria-hidden="true"><i></i><i></i></span>
-            <span class="brand-copy">
-              <span class="brand-name" data-brand="shortName">THX</span>
-              <span class="brand-tagline" data-brand="tagline">Websites &amp; experiências digitais</span>
-            </span>
+            <span class="brand-name" data-brand="shortName">THX</span>
           </a>
 
-          <div class="header-status" aria-label="Disponibilidade para projetos">
-            <span class="status-dot" aria-hidden="true"></span>
-            <span class="status-text">Disponível para novos projetos</span>
-          </div>
-
           <nav class="desktop-nav" aria-label="Navegação principal" data-nav></nav>
-          
+
           <a class="button button--header" data-contact-link href="#contato">
-            <span>Quero uma prévia</span>
+            <span>Iniciar projeto</span>
             <svg class="button-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
               <path d="M2.5 7H11.5M11.5 7L7.5 3M11.5 7L7.5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -59,19 +50,16 @@
       </div>
 
       <div class="mobile-menu-backdrop" id="menu-backdrop" aria-hidden="true"></div>
-      <div class="mobile-menu-drawer" id="mobile-menu" aria-label="Navegação móvel" hidden>
+      <div class="mobile-menu-drawer" id="mobile-menu" role="dialog" aria-modal="true" aria-label="Navegação móvel" hidden>
         <div class="mobile-menu-inner">
           <div class="mobile-menu-header">
-            <div class="header-status">
-              <span class="status-dot" aria-hidden="true"></span>
-              <span class="status-text">Disponível para novos projetos</span>
-            </div>
-            <button class="mobile-menu-close" type="button" aria-label="Fechar menu">✕</button>
+            <span class="mobile-menu-brand">THX</span>
+            <button class="mobile-menu-close" type="button" aria-label="Fechar menu"><span></span><span></span></button>
           </div>
           <nav class="mobile-nav-links" data-nav></nav>
           <div class="mobile-menu-footer">
             <a class="button button--solid mobile-menu-cta" data-contact-link href="#contato">
-              <span>Solicitar prévia no WhatsApp</span>
+              <span>Iniciar projeto</span>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
                 <path d="M2.5 7H11.5M11.5 7L7.5 3M11.5 7L7.5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -81,53 +69,42 @@
       </div>
 
       <main id="conteudo">
-        <section class="hero section-shell" aria-labelledby="hero-title">
-          <div class="hero-copy reveal">
-            <div class="hero-eyebrow-wrap">
-              <p class="eyebrow" data-hero="eyebrow">Sites que fazem sentido para o seu negócio</p>
-            </div>
-            <h1 id="hero-title" data-hero="title">Seu negócio merece uma presença digital à altura.</h1>
-            <p class="hero-text" data-hero="copy">Criamos sites profissionais, rápidos e personalizados para transformar a primeira impressão do seu negócio em uma experiência que transmite confiança.</p>
-            <div class="hero-actions">
-              <a class="button button--solid hero-button-primary" href="#projetos" data-hero="primaryCta">
-                <span>Ver projetos</span>
-                <svg class="button-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                  <path d="M2.5 7H11.5M11.5 7L7.5 3M11.5 7L7.5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </a>
-              <a class="text-link hero-button-secondary" href="#contato" data-hero="secondaryCta" data-contact-link>
-                <span>Solicitar uma prévia</span>
-                <svg class="link-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
-                  <path d="M2.5 7H11.5M11.5 7L7.5 3M11.5 7L7.5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </a>
-            </div>
-          </div>
-
-          <div class="hero-composition reveal" aria-label="Recortes de projetos demonstrativos">
-            <div class="mockup-window hero-window hero-window--back">
-              <div class="mockup-bar" aria-hidden="true">
-                <div class="mockup-dots"><span></span><span></span><span></span></div>
-                <span class="mockup-url">sitedonathalia.vercel.app</span>
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="hero-cursor-field" aria-hidden="true"></div>
+          <div class="hero-inner section-shell">
+            <div class="hero-copy">
+              <p class="hero-eyebrow hero-stage" data-hero="eyebrow" style="--hero-delay: 1780ms">THX — Websites &amp; experiências digitais</p>
+              <h1 class="hero-stage" id="hero-title" data-hero="title" style="--hero-delay: 1840ms">
+                <span>Seu negócio merece mais</span>
+                <span>do que apenas estar <span class="hero-online-detail">online.</span></span>
+              </h1>
+              <p class="hero-text hero-stage" data-hero="copy" style="--hero-delay: 1920ms">Criamos sites modernos e experiências digitais que transformam atenção em interesse — e interesse em novas oportunidades.</p>
+              <div class="hero-actions hero-stage" style="--hero-delay: 2000ms">
+                <a class="button hero-button-primary" data-hero="primaryCta" data-contact-link href="#contato">
+                  <span>Quero elevar minha presença</span>
+                  <svg class="button-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                    <path d="M2.5 7H11.5M11.5 7L7.5 3M11.5 7L7.5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
+                <a class="hero-button-secondary" data-hero="secondaryCta" href="#projetos">
+                  <span>Ver projetos</span>
+                  <svg class="link-arrow" width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+                    <path d="M2.5 7H11.5M11.5 7L7.5 3M11.5 7L7.5 11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </a>
               </div>
-              <div class="mockup-screen">
-                <img src="assets/images/cases/dona-nathalia-preview.png" alt="Prévia de projeto demonstrativo de estética Dona Nathália" />
-              </div>
+              <p class="hero-audience hero-stage" style="--hero-delay: 2070ms">Autônomos <span>·</span> Negócios locais <span>·</span> Serviços especializados <span>·</span> Empresas</p>
             </div>
 
-            <div class="mockup-window hero-window hero-window--front">
-              <div class="mockup-bar" aria-hidden="true">
-                <div class="mockup-dots"><span></span><span></span><span></span></div>
-                <span class="mockup-url">essenza-estetica.thx.design</span>
+            <div class="hero-signal hero-stage" style="--hero-delay: 2140ms" aria-label="THX, Digital Experiences, Design, Front-end, Code, Web">
+              <div class="hero-signal-heading">
+                <span>THX<sup>®</sup></span>
+                <i aria-hidden="true"></i>
               </div>
-              <div class="mockup-screen">
-                <img src="assets/images/cases/essenza-preview.png" alt="Prévia de projeto demonstrativo de estética Essenza" />
+              <div class="hero-signal-meta">
+                <p class="hero-signal-label">DIGITAL EXPERIENCES</p>
+                <p class="hero-signal-signature">DESIGN / FRONT-END / CODE / WEB</p>
               </div>
-            </div>
-
-            <div class="hero-badge">
-              <span class="hero-badge-number">02</span>
-              <p class="hero-badge-copy"><strong>Projetos demonstrativos</strong><span>prontos para navegar</span></p>
             </div>
           </div>
         </section>

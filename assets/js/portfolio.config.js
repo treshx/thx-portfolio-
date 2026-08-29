@@ -31,9 +31,9 @@ window.portfolioConfig = {
   },
   navigation: [
     { label: "Projetos", href: "#projetos" },
-    { label: "Como funciona", href: "#como-funciona" },
+    { label: "Serviços", href: "#como-funciona" },
     { label: "Sobre", href: "#sobre" },
-    { label: "FAQ", href: "#faq" },
+    { label: "Contato", href: "#contato" },
   ],
   contact: {
     whatsappNumber: "5522992195843",
@@ -43,11 +43,13 @@ window.portfolioConfig = {
     note: "Fale com a THX pelo WhatsApp para solicitar uma prévia do seu projeto.",
   },
   hero: {
-    eyebrow: "Websites & experiências digitais",
-    title: "Seu negócio merece uma presença digital à altura.",
-    copy: "A THX cria sites personalizados para negócios que querem apresentar seus serviços com mais clareza, transmitir profissionalismo e facilitar o contato pelo celular.",
-    primaryCta: "Ver projetos",
-    secondaryCta: "Quero uma prévia",
+    eyebrow: "THX — Websites & experiências digitais",
+    title: "Seu negócio merece mais do que apenas estar online.",
+    titleLines: ["Seu negócio merece mais", "do que apenas estar online."],
+    titleAccent: "online.",
+    copy: "Criamos sites modernos e experiências digitais que transformam atenção em interesse — e interesse em novas oportunidades.",
+    primaryCta: "Quero elevar minha presença",
+    secondaryCta: "Ver projetos",
   },
   projects: [
     {
