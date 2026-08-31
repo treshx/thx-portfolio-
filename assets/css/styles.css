@@ -902,7 +902,8 @@ button {
    POSSIBILIDADES / ABERTURA DA EXPERIÊNCIA
    ========================================================================== */
 .possibilities {
-  --possibility-progress: 0;
+  --possibility-progress: 0.1667;
+  --possibility-autoplay-duration: 6000ms;
   position: relative;
   z-index: 1;
   overflow: clip;
@@ -927,8 +928,8 @@ button {
   display: grid;
   grid-template-columns: minmax(130px, 0.24fr) minmax(0, 1fr);
   gap: clamp(36px, 7vw, 110px);
-  padding-top: clamp(120px, 15vw, 210px);
-  padding-bottom: clamp(100px, 12vw, 168px);
+  padding-top: clamp(96px, 10vw, 144px);
+  padding-bottom: clamp(72px, 7.5vw, 108px);
 }
 
 .possibilities-section-id {
@@ -963,6 +964,16 @@ button {
   color: rgba(245, 245, 245, 0.62);
   font-size: 16px;
   line-height: 1.75;
+}
+
+.possibilities-intro-copy > .possibilities-concept-note {
+  max-width: 540px;
+  margin-top: 16px;
+  color: rgba(196, 181, 253, 0.48);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  line-height: 1.6;
 }
 
 /* ==========================================================================
@@ -1026,7 +1037,7 @@ button {
    POSSIBILIDADES / STORYTELLING E MINI EXPERIÊNCIAS
    ========================================================================== */
 .possibilities-story,
-.possibilities-sticky,
+.possibilities-showcase,
 .possibilities-stage,
 .possibilities-panels {
   position: relative;
@@ -1037,53 +1048,149 @@ button {
   border-bottom: 1px solid rgba(245, 245, 245, 0.08);
 }
 
-.possibilities-sticky {
-  min-height: auto;
-}
-
 .possibilities-stage {
-  padding-top: 26px;
-  padding-bottom: 26px;
+  display: grid;
+  grid-template-columns: minmax(190px, 0.28fr) minmax(0, 1fr);
+  grid-template-areas:
+    "index panels"
+    "index progress";
+  column-gap: clamp(28px, 4vw, 64px);
+  padding-top: clamp(52px, 5vw, 76px);
+  padding-bottom: clamp(58px, 6vw, 88px);
 }
 
-.possibilities-index,
-.possibilities-progress {
-  display: none;
+.possibilities-index {
+  grid-area: index;
+  align-self: center;
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.possibilities-index button {
+  position: relative;
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 8px 8px 18px;
+  color: rgba(245, 245, 245, 0.46);
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  line-height: 1.35;
+  transition: color 220ms var(--ease), transform 260ms var(--ease), opacity 220ms var(--ease);
+}
+
+.possibilities-index button::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 9px;
+  height: 1px;
+  background: #8b5cf6;
+  opacity: 0;
+  transform: translateY(-50%) scaleX(0);
+  transform-origin: left center;
+  transition: opacity 220ms var(--ease), transform 260ms var(--ease);
+}
+
+.possibilities-index button > span {
+  color: rgba(196, 181, 253, 0.42);
+  font-size: 9px;
+  font-variant-numeric: tabular-nums;
+  transition: color 220ms var(--ease);
+}
+
+.possibilities-index button:hover {
+  color: rgba(245, 245, 245, 0.78);
+  transform: translateX(2px);
+}
+
+.possibilities-index button.is-active {
+  color: #f5f5f5;
+  transform: translateX(4px);
+}
+
+.possibilities-index button.is-active::before {
+  opacity: 1;
+  transform: translateY(-50%) scaleX(1);
+}
+
+.possibilities-index button.is-active > span {
+  color: #a78bfa;
+}
+
+.possibilities-index button:focus-visible {
+  outline: 2px solid #a78bfa;
+  outline-offset: 2px;
 }
 
 .possibilities-panels {
+  grid-area: panels;
   display: grid;
+  min-width: 0;
 }
 
 .possibility-panel {
+  grid-area: 1 / 1;
   display: grid;
+  grid-template-columns: minmax(260px, 0.72fr) minmax(420px, 1.28fr);
+  grid-template-rows: auto 1fr;
   grid-template-areas:
-    "head"
-    "preview"
-    "body";
-  gap: 28px;
-  padding: clamp(68px, 13vw, 108px) 0;
-  border-top: 1px solid rgba(245, 245, 245, 0.09);
+    "head preview"
+    "body preview";
+  column-gap: clamp(30px, 4vw, 58px);
+  row-gap: 22px;
+  align-items: center;
+  min-width: 0;
+  padding: 0;
   color: #f5f5f5;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translate3d(0, 16px, 0);
+  transition:
+    opacity 300ms var(--ease),
+    visibility 0s linear 360ms,
+    transform 420ms var(--ease);
 }
 
-.possibility-panel:first-child {
-  border-top: 0;
+.possibility-panel.is-before {
+  transform: translate3d(0, -14px, 0);
 }
 
-.possibility-panel.reveal {
-  will-change: auto;
+.possibility-panel.is-active {
+  z-index: 2;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate3d(0, 0, 0);
+  transition-delay: 70ms, 0s, 70ms;
 }
 
 .possibility-copy-head { grid-area: head; }
 .possibility-copy-body { grid-area: body; }
 .possibility-preview-wrap { grid-area: preview; }
 
+.possibility-copy-head {
+  align-self: end;
+}
+
+.possibility-copy-body {
+  align-self: start;
+}
+
 .possibility-count {
   display: flex;
   align-items: baseline;
   gap: 9px;
-  margin: 0 0 26px;
+  margin: 0 0 18px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1102,7 +1209,7 @@ button {
 }
 
 .possibility-sector {
-  margin: 0 0 18px;
+  margin: 0 0 14px;
   color: rgba(196, 181, 253, 0.72);
   font-size: 9px;
   font-weight: 700;
@@ -1115,7 +1222,7 @@ button {
   margin: 0;
   color: #f5f5f5;
   font-family: var(--sans);
-  font-size: clamp(38px, 8.5vw, 58px);
+  font-size: clamp(34px, 3.25vw, 48px);
   font-weight: 600;
   letter-spacing: -0.04em;
   line-height: 1.02;
@@ -1123,10 +1230,10 @@ button {
 }
 
 .possibility-description {
-  max-width: 590px;
+  max-width: 470px;
   margin: 0;
   color: rgba(245, 245, 245, 0.62);
-  font-size: 15px;
+  font-size: 13px;
   line-height: 1.72;
 }
 
@@ -1134,7 +1241,7 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 24px 0 0;
+  margin: 18px 0 0;
   padding: 0;
   list-style: none;
 }
@@ -1155,7 +1262,8 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  margin-top: 28px;
+  min-height: 44px;
+  margin-top: 20px;
   padding: 10px 0;
   color: rgba(245, 245, 245, 0.72);
   font-size: 9px;
@@ -1208,6 +1316,41 @@ button {
   perspective: 1200px;
 }
 
+.possibilities-progress {
+  grid-area: progress;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 13px;
+  padding-top: 20px;
+  color: rgba(245, 245, 245, 0.32);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+}
+
+.possibilities-progress > i {
+  position: relative;
+  height: 1px;
+  overflow: hidden;
+  background: rgba(245, 245, 245, 0.1);
+}
+
+.possibilities-progress b {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  transform: scaleX(var(--possibility-progress));
+  transform-origin: left center;
+  transition: transform 420ms var(--ease);
+}
+
+@keyframes possibilityAutoplayProgress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
 .possibility-preview {
   position: relative;
   width: 100%;
@@ -1217,8 +1360,31 @@ button {
   background: #0a0910;
   border: 1px solid rgba(196, 181, 253, 0.16);
   border-radius: 16px;
+  clip-path: inset(5% 0 0 0 round 16px);
+  opacity: 0.54;
+  transform: perspective(1200px)
+    rotateX(var(--possibility-tilt-x, 0deg))
+    rotateY(var(--possibility-tilt-y, 0deg))
+    translate3d(0, 10px, 0)
+    scale(0.99);
+  transform-origin: center;
   transform-style: preserve-3d;
   box-shadow: 0 30px 70px -42px rgba(76, 29, 149, 0.62);
+  transition: clip-path 480ms var(--ease), opacity 300ms var(--ease), transform 480ms var(--ease);
+}
+
+.possibility-panel.is-active .possibility-preview {
+  clip-path: inset(0 round 16px);
+  opacity: 1;
+  transform: perspective(1200px)
+    rotateX(var(--possibility-tilt-x, 0deg))
+    rotateY(var(--possibility-tilt-y, 0deg))
+    translate3d(0, 0, 0)
+    scale(1);
+}
+
+.possibility-panel.is-active .preview-depth {
+  will-change: transform;
 }
 
 .possibility-preview::after {
@@ -1249,6 +1415,18 @@ button {
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.12em;
+}
+
+.preview-concept-label {
+  color: rgba(247, 245, 255, 0.72);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+
+.preview-concept-label i {
+  color: rgba(216, 208, 255, 0.88);
+  font-style: normal;
 }
 
 .preview-menu,
@@ -1667,8 +1845,7 @@ button {
   transition: transform 420ms var(--ease) 180ms;
 }
 
-.possibilities.is-enhanced .possibility-panel.is-active .commerce-bag i,
-.possibilities:not(.is-enhanced) .possibility-panel.is-visible .commerce-bag i {
+.possibility-panel.is-active .commerce-bag i {
   transform: scale(1);
 }
 
@@ -1831,8 +2008,7 @@ button {
   transition: transform 620ms var(--ease);
 }
 
-.possibilities.is-enhanced .possibility-panel.is-active .company-solutions p i,
-.possibilities:not(.is-enhanced) .possibility-panel.is-visible .company-solutions p i {
+.possibility-panel.is-active .company-solutions p i {
   transform: scaleX(1);
 }
 
@@ -1869,24 +2045,28 @@ button {
 
 .possibilities-outro {
   display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(280px, 0.7fr);
-  justify-content: space-between;
-  gap: clamp(50px, 10vw, 160px);
-  padding-top: clamp(110px, 13vw, 180px);
-  padding-bottom: clamp(120px, 15vw, 210px);
+  grid-template-columns: minmax(0, 0.95fr) minmax(320px, 0.72fr);
+  align-items: center;
+  gap: clamp(48px, 6vw, 84px);
+  min-height: clamp(520px, 66vh, 680px);
+  padding-top: clamp(80px, 8vw, 112px);
+  padding-bottom: clamp(84px, 8vw, 116px);
+  border-top: 1px solid rgba(245, 245, 245, 0.08);
 }
 
 .possibilities-outro > p {
+  min-width: 0;
   margin: 0;
   color: #f5f5f5;
-  font-size: clamp(46px, 5.8vw, 80px);
+  font-size: clamp(50px, 5vw, 72px);
   font-weight: 600;
   letter-spacing: -0.04em;
   line-height: 0.98;
+  white-space: nowrap;
 }
 
 .possibilities-outro > div {
-  align-self: end;
+  align-self: center;
   max-width: 480px;
 }
 
@@ -1926,248 +2106,132 @@ button {
   100% { box-shadow: 0 0 0 8px rgba(167, 139, 250, 0); }
 }
 
-.possibilities.is-enhanced .possibility-panel.is-active .local-whatsapp i,
-.possibilities:not(.is-enhanced) .possibility-panel.is-visible .local-whatsapp i {
+.possibility-panel.is-active .local-whatsapp i {
   animation: possibilityLocalPulse 720ms ease-out 180ms 1 both;
 }
 
-@media (min-width: 1100px) and (min-height: 680px) and (hover: hover) and (pointer: fine) {
-  .possibilities.is-enhanced .possibilities-story {
-    height: calc(var(--possibility-count) * 100svh);
-  }
-
-  .possibilities.is-enhanced .possibilities-sticky {
-    position: sticky;
-    top: 72px;
-    height: calc(100svh - 72px);
-    min-height: 608px;
-    overflow: hidden;
-  }
-
-  .possibilities.is-enhanced .possibilities-stage {
-    display: grid;
-    grid-template-columns: 112px minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr) auto;
-    column-gap: clamp(30px, 4.2vw, 68px);
-    height: 100%;
-    padding-top: clamp(32px, 5vh, 58px);
-    padding-bottom: clamp(28px, 4vh, 46px);
-  }
-
-  .possibilities.is-enhanced .possibilities-index {
-    grid-column: 1;
-    grid-row: 1;
-    align-self: center;
-    display: grid;
-    gap: 13px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .possibilities.is-enhanced .possibilities-index li {
-    position: relative;
-    color: rgba(245, 245, 245, 0.48);
-    font-size: 7px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    line-height: 1.4;
-    transition: color 280ms var(--ease), transform 280ms var(--ease);
-  }
-
-  .possibilities.is-enhanced .possibilities-index li::before {
-    content: "";
-    position: absolute;
-    left: -15px;
-    top: 0.55em;
-    width: 7px;
-    height: 1px;
-    background: #8b5cf6;
-    opacity: 0;
-    transform: scaleX(0);
-    transform-origin: right center;
-    transition: opacity 280ms var(--ease), transform 280ms var(--ease);
-  }
-
-  .possibilities.is-enhanced .possibilities-index li.is-active {
-    color: rgba(245, 245, 245, 0.9);
-    transform: translateX(3px);
-  }
-
-  .possibilities.is-enhanced .possibilities-index li.is-active::before {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-
-  .possibilities.is-enhanced .possibilities-panels {
-    grid-column: 2;
-    grid-row: 1;
-    min-height: 0;
-  }
-
-  .possibilities.is-enhanced .possibility-panel {
-    position: absolute;
-    inset: 0;
-    grid-template-columns: minmax(300px, 0.75fr) minmax(500px, 1.25fr);
-    grid-template-rows: auto 1fr;
-    grid-template-areas:
-      "head preview"
-      "body preview";
-    column-gap: clamp(42px, 5vw, 78px);
-    row-gap: 24px;
-    align-items: center;
-    padding: 0;
-    border: 0;
-    opacity: 0;
-    pointer-events: none;
-    transform: translate3d(0, 18px, 0);
-    transition: opacity 360ms var(--ease), transform 460ms var(--ease);
-  }
-
-  .possibilities.is-enhanced .possibility-panel.is-before {
-    transform: translate3d(0, -16px, 0);
-  }
-
-  .possibilities.is-enhanced .possibility-panel.is-active {
-    z-index: 2;
-    opacity: 1;
-    pointer-events: auto;
-    transform: translate3d(0, 0, 0);
-    will-change: opacity, transform;
-  }
-
-  .possibilities.is-enhanced .possibility-copy-head {
-    align-self: end;
-  }
-
-  .possibilities.is-enhanced .possibility-copy-body {
-    align-self: start;
-  }
-
-  .possibilities.is-enhanced .possibility-count {
-    margin-bottom: clamp(16px, 2.2vh, 24px);
-  }
-
-  .possibilities.is-enhanced .possibility-sector {
-    margin-bottom: clamp(12px, 1.8vh, 18px);
-  }
-
-  .possibilities.is-enhanced .possibility-copy-head h3 {
-    font-size: clamp(38px, 3.25vw, 53px);
-  }
-
-  .possibilities.is-enhanced .possibility-description {
-    max-width: 470px;
-    font-size: 13px;
-  }
-
-  .possibilities.is-enhanced .possibility-tags {
-    margin-top: 18px;
-  }
-
-  .possibilities.is-enhanced .possibility-explore {
-    margin-top: 20px;
-  }
-
-  .possibilities.is-enhanced .possibility-preview-wrap {
-    align-self: center;
-    height: min(66vh, 610px);
-    min-height: 470px;
-  }
-
-  .possibilities.is-enhanced .possibility-preview {
-    height: 100%;
-    min-height: 0;
-    clip-path: inset(7% 0 0 0 round 16px);
-    opacity: 0.46;
-    transform: perspective(1200px)
-      rotateX(var(--possibility-tilt-x, 0deg))
-      rotateY(var(--possibility-tilt-y, 0deg))
-      translate3d(0, 12px, 0)
-      scale(0.987);
-    transform-origin: center;
-    transition: clip-path 520ms var(--ease), opacity 360ms var(--ease), transform 520ms var(--ease);
-  }
-
-  .possibilities.is-enhanced .possibility-panel.is-active .possibility-preview {
-    clip-path: inset(0 round 16px);
-    opacity: 1;
-    transform: perspective(1200px)
-      rotateX(var(--possibility-tilt-x, 0deg))
-      rotateY(var(--possibility-tilt-y, 0deg))
-      translate3d(0, 0, 0)
-      scale(1);
-    will-change: transform, opacity, clip-path;
-  }
-
-  .possibilities.is-enhanced .possibility-panel.is-active .preview-depth {
-    will-change: transform;
-  }
-
-  .possibilities.is-enhanced .possibilities-progress {
-    grid-column: 2;
-    grid-row: 2;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 13px;
-    padding-top: 18px;
-    color: rgba(245, 245, 245, 0.32);
-    font-size: 7px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .possibilities.is-enhanced .possibilities-progress > i {
-    position: relative;
-    height: 1px;
-    overflow: hidden;
-    background: rgba(245, 245, 245, 0.1);
-  }
-
-  .possibilities.is-enhanced .possibilities-progress b {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, #7c3aed, #a78bfa);
-    transform: scaleX(var(--possibility-progress));
-    transform-origin: left center;
-    will-change: transform;
-  }
-}
-
-@media (min-width: 1100px) and (max-width: 1279px) and (min-height: 680px) and (hover: hover) and (pointer: fine) {
-  .possibilities.is-enhanced .possibilities-stage {
-    grid-template-columns: 86px minmax(0, 1fr);
+@media (min-width: 900px) and (max-width: 1279px) {
+  .possibilities-stage {
+    grid-template-columns: 180px minmax(0, 1fr);
     column-gap: 28px;
   }
 
-  .possibilities.is-enhanced .possibilities-index li {
-    font-size: 6px;
+  .possibility-panel {
+    grid-template-columns: minmax(250px, 0.76fr) minmax(390px, 1.24fr);
+    column-gap: 30px;
   }
 
-  .possibilities.is-enhanced .possibility-panel {
-    grid-template-columns: minmax(280px, 0.78fr) minmax(460px, 1.22fr);
-    column-gap: 34px;
+  .possibility-copy-head h3 {
+    font-size: clamp(32px, 3.35vw, 42px);
   }
 
-  .possibilities.is-enhanced .possibility-copy-head h3 {
-    font-size: clamp(34px, 3.15vw, 43px);
-  }
-
-  .possibilities.is-enhanced .possibility-preview-wrap {
-    min-height: 440px;
+  .possibility-preview {
+    min-height: 390px;
   }
 }
 
-@media (max-width: 1099px), (max-height: 679px), (hover: none), (pointer: coarse) {
+@media (min-width: 1280px) {
+  .preview-concept-label {
+    font-size: 10px;
+  }
+}
+
+@media (min-width: 1100px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .possibilities.is-autoplaying .possibilities-progress b {
+    animation: possibilityAutoplayProgress var(--possibility-autoplay-duration) linear both;
+    transition: none;
+  }
+
+  .possibilities.is-autoplay-paused .possibilities-progress b {
+    animation-play-state: paused;
+  }
+}
+
+@media (max-width: 1099px) {
   .possibilities-stage {
     width: min(920px, var(--shell));
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "index"
+      "panels"
+      "progress";
+    row-gap: 30px;
+  }
+
+  .possibilities-index {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+  }
+
+  .possibilities-index::-webkit-scrollbar {
+    display: none;
+  }
+
+  .possibilities-index li {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  .possibilities-index button {
+    display: flex;
+    gap: 8px;
+    width: auto;
+    min-height: 44px;
+    padding: 9px 14px;
+    border: 1px solid rgba(167, 139, 250, 0.16);
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .possibilities-index button::before {
+    display: none;
+  }
+
+  .possibilities-index button:hover,
+  .possibilities-index button.is-active {
+    transform: none;
+  }
+
+  .possibilities-index button.is-active {
+    color: #f5f5f5;
+    border-color: rgba(167, 139, 250, 0.54);
+    background: rgba(124, 58, 237, 0.1);
+  }
+
+  .possibilities-progress {
+    padding-top: 0;
+  }
+}
+
+@media (max-width: 899px) {
+  .possibility-panel {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    grid-template-areas:
+      "head"
+      "preview"
+      "body";
+    gap: 26px;
   }
 
   .possibility-preview {
     min-height: 0;
     aspect-ratio: 16 / 10.5;
+  }
+
+  .possibilities-outro {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+    min-height: 0;
+  }
+
+  .possibilities-outro > p {
+    white-space: normal;
   }
 }
 
@@ -2175,8 +2239,8 @@ button {
   .possibilities-intro {
     grid-template-columns: 1fr;
     gap: 34px;
-    padding-top: 112px;
-    padding-bottom: 96px;
+    padding-top: 92px;
+    padding-bottom: 68px;
   }
 
   .possibilities-section-id {
@@ -2194,14 +2258,19 @@ button {
     line-height: 1.68;
   }
 
+  .possibilities-intro-copy > .possibilities-concept-note {
+    margin-top: 14px;
+    font-size: 9px;
+  }
+
   .possibilities-stage {
-    padding-top: 0;
-    padding-bottom: 0;
+    padding-top: 48px;
+    padding-bottom: 64px;
   }
 
   .possibility-panel {
     gap: 24px;
-    padding: 76px 0 82px;
+    padding: 0;
   }
 
   .possibility-count {
@@ -2209,7 +2278,7 @@ button {
   }
 
   .possibility-copy-head h3 {
-    font-size: clamp(36px, 10.8vw, 48px);
+    font-size: clamp(34px, 10vw, 46px);
   }
 
   .possibility-preview {
@@ -2337,9 +2406,9 @@ button {
 
   .possibilities-outro {
     grid-template-columns: 1fr;
-    gap: 40px;
-    padding-top: 108px;
-    padding-bottom: 126px;
+    gap: 32px;
+    padding-top: 76px;
+    padding-bottom: 88px;
   }
 
   .possibilities-outro > p {
@@ -3795,7 +3864,7 @@ button {
   }
 
   .possibilities-story,
-  .possibilities-sticky,
+  .possibilities-showcase,
   .possibilities-stage,
   .possibilities-panels,
   .possibility-panel {
@@ -3805,7 +3874,8 @@ button {
 
   .possibility-panel,
   .possibility-preview,
-  .preview-depth {
+  .preview-depth,
+  .possibilities-index button {
     opacity: 1 !important;
     clip-path: none !important;
     transform: none !important;

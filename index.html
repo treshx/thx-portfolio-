@@ -115,23 +115,24 @@
             <div class="possibilities-intro-copy">
               <h2 id="possibilities-title">Diferentes negócios.<br>Diferentes experiências.</h2>
               <p>Cada projeto pede uma abordagem própria. Explore algumas das possibilidades que podemos criar para transformar sua presença digital.</p>
+              <p class="possibilities-concept-note">Conceitos demonstrativos criados para explorar diferentes possibilidades digitais.</p>
             </div>
           </div>
 
-          <div class="possibilities-story" data-possibility-story style="--possibility-count: 6">
-            <div class="possibilities-sticky">
+          <div class="possibilities-story">
+            <div class="possibilities-showcase">
               <div class="possibilities-stage section-shell" data-possibility-stage>
-                <ol class="possibilities-index" aria-label="Índice de possibilidades">
-                  <li class="is-active" data-possibility-index>PSICOLOGIA</li>
-                  <li data-possibility-index>ESTÉTICA</li>
-                  <li data-possibility-index>NEGÓCIOS</li>
-                  <li data-possibility-index>AUTÔNOMOS</li>
-                  <li data-possibility-index>E-COMMERCE</li>
-                  <li data-possibility-index>EMPRESAS</li>
+                <ol class="possibilities-index" role="tablist" aria-label="Possibilidades por segmento">
+                  <li role="presentation"><button class="is-active" id="possibility-tab-1" type="button" role="tab" aria-selected="true" aria-controls="possibility-panel-1" tabindex="0" data-possibility-index><span>01</span> Psicologia &amp; Saúde</button></li>
+                  <li role="presentation"><button id="possibility-tab-2" type="button" role="tab" aria-selected="false" aria-controls="possibility-panel-2" tabindex="-1" data-possibility-index><span>02</span> Estética &amp; Bem-estar</button></li>
+                  <li role="presentation"><button id="possibility-tab-3" type="button" role="tab" aria-selected="false" aria-controls="possibility-panel-3" tabindex="-1" data-possibility-index><span>03</span> Negócios Locais</button></li>
+                  <li role="presentation"><button id="possibility-tab-4" type="button" role="tab" aria-selected="false" aria-controls="possibility-panel-4" tabindex="-1" data-possibility-index><span>04</span> Profissionais Autônomos</button></li>
+                  <li role="presentation"><button id="possibility-tab-5" type="button" role="tab" aria-selected="false" aria-controls="possibility-panel-5" tabindex="-1" data-possibility-index><span>05</span> E-commerce</button></li>
+                  <li role="presentation"><button id="possibility-tab-6" type="button" role="tab" aria-selected="false" aria-controls="possibility-panel-6" tabindex="-1" data-possibility-index><span>06</span> Empresas &amp; Serviços</button></li>
                 </ol>
 
                 <div class="possibilities-panels">
-                  <article class="possibility-panel reveal is-active" data-possibility-panel aria-hidden="false">
+                  <article class="possibility-panel is-active" id="possibility-panel-1" role="tabpanel" aria-labelledby="possibility-tab-1" aria-hidden="false" data-possibility-panel>
                     <div class="possibility-copy-head">
                       <p class="possibility-count"><strong>01</strong><span>/ 06</span></p>
                       <p class="possibility-sector">PSICOLOGIA &amp; SAÚDE</p>
@@ -140,7 +141,7 @@
                     <div class="possibility-preview-wrap">
                       <div class="possibility-preview possibility-preview--psychology" aria-hidden="true">
                         <div class="preview-sitebar">
-                          <span class="preview-wordmark">LAURA MARTINS</span>
+                          <span class="preview-wordmark preview-concept-label">THX CONCEPT <i>/ 01</i></span>
                           <span class="preview-menu">SOBRE&nbsp;&nbsp;&nbsp; ABORDAGEM&nbsp;&nbsp;&nbsp; CONTATO</span>
                         </div>
                         <div class="psychology-layout">
@@ -154,7 +155,7 @@
                           <div class="psychology-portrait preview-depth">
                             <span class="psychology-orbit psychology-orbit--one"></span>
                             <span class="psychology-orbit psychology-orbit--two"></span>
-                            <span class="psychology-monogram">LM</span>
+                            <span class="psychology-monogram">01</span>
                             <small>ESCUTA · ACOLHIMENTO</small>
                           </div>
                         </div>
@@ -165,11 +166,11 @@
                       <ul class="possibility-tags" aria-label="Características">
                         <li>INSTITUCIONAL</li><li>AUTORIDADE</li><li>AGENDAMENTO</li>
                       </ul>
-                      <button class="possibility-explore" type="button">EXPLORAR POSSIBILIDADE <span aria-hidden="true">↗</span></button>
+                      <a class="possibility-explore" href="#contato">EXPLORAR POSSIBILIDADE <span aria-hidden="true">↗</span></a>
                     </div>
                   </article>
 
-                  <article class="possibility-panel reveal is-after" data-possibility-panel aria-hidden="false">
+                  <article class="possibility-panel is-after" id="possibility-panel-2" role="tabpanel" aria-labelledby="possibility-tab-2" aria-hidden="true" inert data-possibility-panel>
                     <div class="possibility-copy-head">
                       <p class="possibility-count"><strong>02</strong><span>/ 06</span></p>
                       <p class="possibility-sector">ESTÉTICA &amp; BEM-ESTAR</p>
@@ -178,7 +179,7 @@
                     <div class="possibility-preview-wrap">
                       <div class="possibility-preview possibility-preview--aesthetics" aria-hidden="true">
                         <div class="preview-sitebar">
-                          <span class="preview-wordmark">ATELIÊ NUA</span>
+                          <span class="preview-wordmark preview-concept-label">THX CONCEPT <i>/ 02</i></span>
                           <span class="preview-menu">TRATAMENTOS&nbsp;&nbsp;&nbsp; SOBRE&nbsp;&nbsp;&nbsp; AGENDE</span>
                         </div>
                         <div class="aesthetics-layout">
@@ -188,7 +189,7 @@
                             <span class="aesthetics-caption">CUIDADO EM CADA DETALHE</span>
                           </div>
                           <div class="aesthetics-copy preview-depth">
-                            <span class="preview-overline">BELEZA COM INTENÇÃO</span>
+                            <span class="preview-overline">ESTÉTICA &amp; BEM-ESTAR</span>
                             <p class="preview-display">Sua pele,<br>seu tempo.</p>
                             <ol>
                               <li><span>01</span> Facial</li>
@@ -205,11 +206,11 @@
                       <ul class="possibility-tags" aria-label="Características">
                         <li>SERVIÇOS</li><li>EXPERIÊNCIA</li><li>CONVERSÃO</li>
                       </ul>
-                      <button class="possibility-explore" type="button">EXPLORAR POSSIBILIDADE <span aria-hidden="true">↗</span></button>
+                      <a class="possibility-explore" href="#contato">EXPLORAR POSSIBILIDADE <span aria-hidden="true">↗</span></a>
                     </div>
                   </article>
 
-                  <article class="possibility-panel reveal is-after" data-possibility-panel aria-hidden="false">
+                  <article class="possibility-panel is-after" id="possibility-panel-3" role="tabpanel" aria-labelledby="possibility-tab-3" aria-hidden="true" inert data-possibility-panel>
                     <div class="possibility-copy-head">
                       <p class="possibility-count"><strong>03</strong><span>/ 06</span></p>
                       <p class="possibility-sector">NEGÓCIOS LOCAIS</p>
@@ -218,12 +219,12 @@
                     <div class="possibility-preview-wrap">
                       <div class="possibility-preview possibility-preview--local" aria-hidden="true">
                         <div class="preview-sitebar">
-                          <span class="preview-wordmark">CASA NORTE</span>
+                          <span class="preview-wordmark preview-concept-label">THX CONCEPT <i>/ 03</i></span>
                           <span class="local-open"><i></i> ABERTO AGORA</span>
                         </div>
                         <div class="local-layout">
                           <div class="local-main preview-depth">
-                            <span class="preview-overline">ELÉTRICA · HIDRÁULICA · REPAROS</span>
+                            <span class="preview-overline">NEGÓCIO LOCAL</span>
                             <p class="preview-display">Precisou?<br>A gente resolve.</p>
                             <div class="local-rating"><strong>4.9</strong><span>★★★★★<br>AVALIAÇÕES LOCAIS</span></div>
                             <span class="preview-action local-whatsapp"><i></i> CHAMAR NO WHATSAPP</span>
@@ -242,11 +243,11 @@
                       <ul class="possibility-tags" aria-label="Características">
                         <li>LOCAL</li><li>WHATSAPP</li><li>CONTATO</li>
                       </ul>
-                      <button class="possibility-explore" type="button">EXPLORAR POSSIBILIDADE <span aria-hidden="true">↗</span></button>
+                      <a class="possibility-explore" href="#contato">EXPLORAR POSSIBILIDADE <span aria-hidden="true">↗</span></a>
                     </div>
                   </article>
 
-                  <article class="possibility-panel reveal is-after" data-possibility-panel aria-hidden="false">
+                  <article class="possibility-panel is-after" id="possibility-panel-4" role="tabpanel" aria-labelledby="possibility-tab-4" aria-hidden="true" inert data-possibility-panel>
                     <div class="possibility-copy-head">
                       <p class="possibility-count"><strong>04</strong><span>/ 06</span></p>
                       <p class="possibility-sector">PROFISSIONAIS AUTÔNOMOS</p>
@@ -255,12 +256,12 @@
                     <div class="possibility-preview-wrap">
                       <div class="possibility-preview possibility-preview--expert" aria-hidden="true">
                         <div class="preview-sitebar">
-                          <span class="preview-wordmark">HELENA RIOS</span>
+                          <span class="preview-wordmark preview-concept-label">THX CONCEPT <i>/ 04</i></span>
                           <span class="preview-menu">ESTRATÉGIA&nbsp;&nbsp;&nbsp; MÉTODO&nbsp;&nbsp;&nbsp; CONTATO</span>
                         </div>
                         <div class="expert-layout">
                           <div class="expert-intro preview-depth">
-                            <span class="preview-overline">CONSULTORA DE POSICIONAMENTO</span>
+                            <span class="preview-overline">MARCA PESSOAL</span>
                             <p class="preview-display">Clareza para ocupar<br>o lugar certo.</p>
                             <span class="preview-action">CONHECER O MÉTODO</span>
                           </div>
@@ -279,11 +280,11 @@
                       <ul class="possibility-tags" aria-label="Características">
                         <li>AUTORIDADE</li><li>POSICIONAMENTO</li><li>SERVIÇOS</li>
                       </ul>
-                      <button class="possibility-explore" type="button">EXPLORAR POSSIBILIDADE <span aria-hidden="true">↗</span></button>
+                      <a class="possibility-explore" href="#contato">EXPLORAR POSSIBILIDADE <span aria-hidden="true">↗</span></a>
                     </div>
                   </article>
 
-                  <article class="possibility-panel reveal is-after" data-possibility-panel aria-hidden="false">
+                  <article class="possibility-panel is-after" id="possibility-panel-5" role="tabpanel" aria-labelledby="possibility-tab-5" aria-hidden="true" inert data-possibility-panel>
                     <div class="possibility-copy-head">
                       <p class="possibility-count"><strong>05</strong><span>/ 06</span></p>
                       <p class="possibility-sector">E-COMMERCE</p>
@@ -292,12 +293,12 @@
                     <div class="possibility-preview-wrap">
                       <div class="possibility-preview possibility-preview--commerce" aria-hidden="true">
                         <div class="preview-sitebar commerce-bar">
-                          <span class="preview-wordmark">NOMA OBJECTS</span>
+                          <span class="preview-wordmark preview-concept-label">THX CONCEPT <i>/ 05</i></span>
                           <span class="commerce-categories">NOVOS&nbsp;&nbsp;&nbsp; CASA&nbsp;&nbsp;&nbsp; OBJETOS</span>
                           <span class="commerce-bag">BAG <i>1</i></span>
                         </div>
                         <div class="commerce-layout preview-depth">
-                          <div class="commerce-heading"><span>CURADORIA 05</span><p>Objetos para<br>viver melhor.</p></div>
+                          <div class="commerce-heading"><span>LOJA ONLINE</span><p>Objetos para<br>viver melhor.</p></div>
                           <div class="commerce-products">
                             <div class="commerce-product commerce-product--one"><i></i><p>Vaso Uno <span>R$ 189</span></p></div>
                             <div class="commerce-product commerce-product--two"><i></i><p>Luminária Arco <span>R$ 349</span></p></div>
@@ -311,11 +312,11 @@
                       <ul class="possibility-tags" aria-label="Características">
                         <li>PRODUTOS</li><li>EXPERIÊNCIA</li><li>VENDAS</li>
                       </ul>
-                      <button class="possibility-explore" type="button">EXPLORAR POSSIBILIDADE <span aria-hidden="true">↗</span></button>
+                      <a class="possibility-explore" href="#contato">EXPLORAR POSSIBILIDADE <span aria-hidden="true">↗</span></a>
                     </div>
                   </article>
 
-                  <article class="possibility-panel reveal is-after" data-possibility-panel aria-hidden="false">
+                  <article class="possibility-panel is-after" id="possibility-panel-6" role="tabpanel" aria-labelledby="possibility-tab-6" aria-hidden="true" inert data-possibility-panel>
                     <div class="possibility-copy-head">
                       <p class="possibility-count"><strong>06</strong><span>/ 06</span></p>
                       <p class="possibility-sector">EMPRESAS &amp; SERVIÇOS</p>
@@ -324,12 +325,12 @@
                     <div class="possibility-preview-wrap">
                       <div class="possibility-preview possibility-preview--company" aria-hidden="true">
                         <div class="preview-sitebar">
-                          <span class="preview-wordmark">AXIS</span>
+                          <span class="preview-wordmark preview-concept-label">THX CONCEPT <i>/ 06</i></span>
                           <span class="preview-menu">SOLUÇÕES&nbsp;&nbsp;&nbsp; EMPRESA&nbsp;&nbsp;&nbsp; CONTATO</span>
                         </div>
                         <div class="company-layout">
                           <div class="company-intro preview-depth">
-                            <span class="preview-overline">ESTRUTURA QUE MOVE NEGÓCIOS</span>
+                            <span class="preview-overline">SOLUÇÕES EMPRESARIAIS</span>
                             <p class="preview-display">Soluções claras para<br>desafios complexos.</p>
                             <span class="preview-action">FALAR COM UM ESPECIALISTA</span>
                           </div>
@@ -350,7 +351,7 @@
                       <ul class="possibility-tags" aria-label="Características">
                         <li>SOLUÇÕES</li><li>NEGÓCIOS</li><li>CONVERSÃO</li>
                       </ul>
-                      <button class="possibility-explore" type="button">EXPLORAR POSSIBILIDADE <span aria-hidden="true">↗</span></button>
+                      <a class="possibility-explore" href="#contato">EXPLORAR POSSIBILIDADE <span aria-hidden="true">↗</span></a>
                     </div>
                   </article>
                 </div>
@@ -365,7 +366,7 @@
           <div class="possibilities-outro section-shell reveal">
             <p>Não encontrou<br>o seu segmento?</p>
             <div>
-              <span>Isso não significa que não podemos construir para ele. Cada negócio pode exigir uma experiência diferente.</span>
+              <span>Seu negócio não precisa caber em uma categoria. Criamos a experiência certa para o que você precisa.</span>
               <a href="#contato">CONVERSAR SOBRE MEU PROJETO <strong aria-hidden="true">→</strong></a>
             </div>
           </div>

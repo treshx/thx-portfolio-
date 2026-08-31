@@ -419,26 +419,35 @@
 
   function setupPossibilities() {
     var section = /** @type {HTMLElement|null} */ (document.querySelector("[data-possibilities]"));
-    var story = /** @type {HTMLElement|null} */ (document.querySelector("[data-possibility-story]"));
     var stage = /** @type {HTMLElement|null} */ (document.querySelector("[data-possibility-stage]"));
-    if (!section || !story || !stage || !window.matchMedia) return;
+    if (!section || !stage || !window.matchMedia) return;
 
     var panels = /** @type {NodeListOf<HTMLElement>} */ (section.querySelectorAll("[data-possibility-panel]"));
-    var indexItems = /** @type {NodeListOf<HTMLElement>} */ (section.querySelectorAll("[data-possibility-index]"));
-    var exploreButtons = /** @type {NodeListOf<HTMLButtonElement>} */ (section.querySelectorAll(".possibility-explore"));
+    var tabs = /** @type {NodeListOf<HTMLButtonElement>} */ (section.querySelectorAll("[data-possibility-index]"));
     var previews = /** @type {NodeListOf<HTMLElement>} */ (section.querySelectorAll(".possibility-preview"));
-    if (!panels.length) return;
+    var progressBar = /** @type {HTMLElement|null} */ (section.querySelector(".possibilities-progress b"));
+    if (!panels.length || panels.length !== tabs.length || !progressBar) return;
 
-    var desktopQuery = window.matchMedia(
-      "(min-width: 1100px) and (min-height: 680px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)"
+    var motionQuery = window.matchMedia(
+      "(hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)"
     );
-    var enhanced = false;
+    var reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    var autoplayQuery = window.matchMedia(
+      "(min-width: 1100px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)"
+    );
+    var autoplayDuration = 6000;
     var activeIndex = 0;
     var frameId = 0;
-    var needsMeasure = true;
-    var latestScrollY = window.scrollY || window.pageYOffset || 0;
-    var storyStart = 0;
-    var storyRange = 1;
+    var autoplayTimerId = 0;
+    var autoplayStartedAt = 0;
+    var autoplayRemaining = autoplayDuration;
+    var autoplayCycleActive = false;
+    var manualLocked = false;
+    var pointerInside = false;
+    var focusInside = false;
+    var sectionVisible = false;
+    var stageVisible = false;
+    var windowFocused = document.hasFocus();
     var pointerBounds = /** @type {DOMRect|null} */ (null);
     var targetTiltX = 0;
     var targetTiltY = 0;
@@ -463,73 +472,135 @@
       preview.style.removeProperty("--possibility-light-y");
     }
 
-    function setActive(nextIndex) {
+    function resetPointerMotion() {
+      pointerBounds = null;
+      targetTiltX = targetTiltY = targetParallaxX = targetParallaxY = 0;
+      currentTiltX = currentTiltY = currentParallaxX = currentParallaxY = 0;
+    }
+
+    function setActive(nextIndex, moveFocus) {
       if (activePreview) clearPreviewStyles(activePreview);
+      resetPointerMotion();
       activeIndex = clamp(nextIndex, 0, panels.length - 1);
+
       for (var i = 0; i < panels.length; i++) {
         var isActive = i === activeIndex;
         panels[i].classList.toggle("is-active", isActive);
         panels[i].classList.toggle("is-before", i < activeIndex);
         panels[i].classList.toggle("is-after", i > activeIndex);
         panels[i].setAttribute("aria-hidden", isActive ? "false" : "true");
-        if (exploreButtons[i]) exploreButtons[i].tabIndex = isActive ? 0 : -1;
-        if (indexItems[i]) {
-          indexItems[i].classList.toggle("is-active", isActive);
-          if (isActive) {
-            indexItems[i].setAttribute("aria-current", "step");
-          } else {
-            indexItems[i].removeAttribute("aria-current");
-          }
-        }
+        panels[i].inert = !isActive;
+
+        tabs[i].classList.toggle("is-active", isActive);
+        tabs[i].setAttribute("aria-selected", isActive ? "true" : "false");
+        tabs[i].tabIndex = isActive ? 0 : -1;
       }
+
       activePreview = previews[activeIndex] || null;
-    }
+      section.style.setProperty("--possibility-progress", ((activeIndex + 1) / panels.length).toFixed(4));
 
-    function exposeAllPanels() {
-      for (var i = 0; i < panels.length; i++) {
-        panels[i].classList.remove("is-before", "is-after");
-        panels[i].setAttribute("aria-hidden", "false");
-        if (exploreButtons[i]) exploreButtons[i].tabIndex = 0;
-        if (indexItems[i]) indexItems[i].removeAttribute("aria-current");
+      if (moveFocus) {
+        tabs[activeIndex].focus();
+        tabs[activeIndex].scrollIntoView({
+          behavior: reducedMotionQuery.matches ? "auto" : "smooth",
+          block: "nearest",
+          inline: "center"
+        });
       }
     }
 
-    function measure() {
-      var rect = story.getBoundingClientRect();
-      var headerOffset = 72;
-      storyStart = rect.top + latestScrollY - headerOffset;
-      storyRange = Math.max(story.offsetHeight - window.innerHeight + headerOffset, 1);
-      pointerBounds = null;
-      needsMeasure = false;
+    function canAutoplay() {
+      return autoplayQuery.matches &&
+        sectionVisible &&
+        stageVisible &&
+        !manualLocked &&
+        !pointerInside &&
+        !focusInside &&
+        !document.hidden &&
+        windowFocused;
+    }
+
+    function clearAutoplayTimer() {
+      if (!autoplayTimerId) return;
+      clearTimeout(autoplayTimerId);
+      autoplayTimerId = 0;
+    }
+
+    function restartAutoplayProgress() {
+      section.classList.remove("is-autoplaying", "is-autoplay-paused");
+      void progressBar.offsetWidth;
+      section.classList.add("is-autoplaying");
+    }
+
+    function stopAutoplay() {
+      clearAutoplayTimer();
+      autoplayCycleActive = false;
+      autoplayRemaining = autoplayDuration;
+      section.classList.remove("is-autoplaying", "is-autoplay-paused");
+    }
+
+    function pauseAutoplay() {
+      if (autoplayTimerId) {
+        autoplayRemaining = Math.max(80, autoplayRemaining - (performance.now() - autoplayStartedAt));
+        clearAutoplayTimer();
+      }
+      if (autoplayCycleActive) section.classList.add("is-autoplay-paused");
+    }
+
+    function advanceAutoplay() {
+      autoplayTimerId = 0;
+      autoplayRemaining = autoplayDuration;
+      setActive((activeIndex + 1) % panels.length, false);
+      restartAutoplayProgress();
+      scheduleAutoplay();
+    }
+
+    function scheduleAutoplay() {
+      if (!canAutoplay()) {
+        pauseAutoplay();
+        return;
+      }
+      if (autoplayTimerId) return;
+
+      if (!autoplayCycleActive) {
+        autoplayCycleActive = true;
+        autoplayRemaining = autoplayDuration;
+        restartAutoplayProgress();
+      } else {
+        section.classList.remove("is-autoplay-paused");
+      }
+
+      autoplayStartedAt = performance.now();
+      autoplayTimerId = window.setTimeout(advanceAutoplay, autoplayRemaining);
+    }
+
+    function updateAutoplay() {
+      if (canAutoplay()) {
+        scheduleAutoplay();
+      } else {
+        pauseAutoplay();
+      }
     }
 
     function schedulePaint() {
-      if (!frameId) frameId = requestAnimationFrame(paint);
+      if (motionQuery.matches && !frameId) frameId = requestAnimationFrame(paint);
     }
 
     function paint() {
       frameId = 0;
-      if (!enhanced) return;
-      if (needsMeasure) measure();
-
-      var progress = clamp((latestScrollY - storyStart) / storyRange, 0, 1);
-      var nextIndex = Math.min(panels.length - 1, Math.floor(progress * panels.length));
-      if (nextIndex !== activeIndex) setActive(nextIndex);
-      section.style.setProperty("--possibility-progress", progress.toFixed(4));
+      if (!motionQuery.matches || !activePreview) return;
 
       currentTiltX += (targetTiltX - currentTiltX) * 0.16;
       currentTiltY += (targetTiltY - currentTiltY) * 0.16;
       currentParallaxX += (targetParallaxX - currentParallaxX) * 0.16;
       currentParallaxY += (targetParallaxY - currentParallaxY) * 0.16;
 
-      if (activePreview) {
-        activePreview.style.setProperty("--possibility-tilt-x", currentTiltX.toFixed(3) + "deg");
-        activePreview.style.setProperty("--possibility-tilt-y", currentTiltY.toFixed(3) + "deg");
-        activePreview.style.setProperty("--possibility-parallax-x", currentParallaxX.toFixed(2) + "px");
-        activePreview.style.setProperty("--possibility-parallax-y", currentParallaxY.toFixed(2) + "px");
-        activePreview.style.setProperty("--possibility-light-x", (50 + currentParallaxX * 3).toFixed(2) + "%");
-        activePreview.style.setProperty("--possibility-light-y", (50 + currentParallaxY * 3).toFixed(2) + "%");
-      }
+      activePreview.style.setProperty("--possibility-tilt-x", currentTiltX.toFixed(3) + "deg");
+      activePreview.style.setProperty("--possibility-tilt-y", currentTiltY.toFixed(3) + "deg");
+      activePreview.style.setProperty("--possibility-parallax-x", currentParallaxX.toFixed(2) + "px");
+      activePreview.style.setProperty("--possibility-parallax-y", currentParallaxY.toFixed(2) + "px");
+      activePreview.style.setProperty("--possibility-light-x", (50 + currentParallaxX * 3).toFixed(2) + "%");
+      activePreview.style.setProperty("--possibility-light-y", (50 + currentParallaxY * 3).toFixed(2) + "%");
 
       if (Math.abs(targetTiltX - currentTiltX) > 0.01 ||
           Math.abs(targetTiltY - currentTiltY) > 0.01 ||
@@ -539,72 +610,161 @@
       }
     }
 
-    function updateMode() {
-      enhanced = desktopQuery.matches;
-      section.classList.toggle("is-enhanced", enhanced);
-      latestScrollY = window.scrollY || window.pageYOffset || 0;
-      needsMeasure = true;
+    for (var tabIndex = 0; tabIndex < tabs.length; tabIndex++) {
+      (function (index) {
+        tabs[index].addEventListener("click", function () {
+          manualLocked = autoplayQuery.matches;
+          stopAutoplay();
+          setActive(index, false);
+        });
 
-      if (enhanced) {
-        setActive(activeIndex);
-        schedulePaint();
-      } else {
-        exposeAllPanels();
-        targetTiltX = targetTiltY = targetParallaxX = targetParallaxY = 0;
-        currentTiltX = currentTiltY = currentParallaxX = currentParallaxY = 0;
-        activePreview = null;
-        for (var i = 0; i < previews.length; i++) clearPreviewStyles(previews[i]);
-        if (frameId) {
-          cancelAnimationFrame(frameId);
-          frameId = 0;
-        }
-      }
+        tabs[index].addEventListener("keydown", function (event) {
+          var nextIndex = activeIndex;
+          if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+            nextIndex = (activeIndex + 1) % tabs.length;
+          } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+            nextIndex = (activeIndex - 1 + tabs.length) % tabs.length;
+          } else if (event.key === "Home") {
+            nextIndex = 0;
+          } else if (event.key === "End") {
+            nextIndex = tabs.length - 1;
+          } else {
+            return;
+          }
+
+          event.preventDefault();
+          stopAutoplay();
+          setActive(nextIndex, true);
+        });
+      })(tabIndex);
     }
 
-    window.addEventListener("scroll", function () {
-      if (!enhanced) return;
-      latestScrollY = window.scrollY || window.pageYOffset || 0;
-      schedulePaint();
-    }, { passive: true });
+    for (var previewIndex = 0; previewIndex < previews.length; previewIndex++) {
+      previews[previewIndex].addEventListener("pointerenter", function () {
+        if (!motionQuery.matches || this !== activePreview) return;
+        pointerBounds = this.getBoundingClientRect();
+      }, { passive: true });
 
-    window.addEventListener("resize", function () {
-      latestScrollY = window.scrollY || window.pageYOffset || 0;
-      needsMeasure = true;
-      if (enhanced) schedulePaint();
-    }, { passive: true });
+      previews[previewIndex].addEventListener("pointermove", function (event) {
+        if (!motionQuery.matches || this !== activePreview) return;
+        if (!pointerBounds) pointerBounds = this.getBoundingClientRect();
+        var normalizedX = clamp(((event.clientX - pointerBounds.left) / pointerBounds.width) * 2 - 1, -1, 1);
+        var normalizedY = clamp(((event.clientY - pointerBounds.top) / pointerBounds.height) * 2 - 1, -1, 1);
+        targetTiltX = normalizedY * -1.05;
+        targetTiltY = normalizedX * 1.35;
+        targetParallaxX = normalizedX * 5;
+        targetParallaxY = normalizedY * 4;
+        schedulePaint();
+      }, { passive: true });
+
+      previews[previewIndex].addEventListener("pointerleave", function () {
+        if (this !== activePreview) return;
+        pointerBounds = null;
+        targetTiltX = targetTiltY = targetParallaxX = targetParallaxY = 0;
+        schedulePaint();
+      }, { passive: true });
+    }
+
+    function updateMotionPreference() {
+      resetPointerMotion();
+      if (frameId) {
+        cancelAnimationFrame(frameId);
+        frameId = 0;
+      }
+      for (var i = 0; i < previews.length; i++) clearPreviewStyles(previews[i]);
+    }
 
     stage.addEventListener("pointerenter", function () {
-      if (!enhanced) return;
-      pointerBounds = stage.getBoundingClientRect();
-    }, { passive: true });
-
-    stage.addEventListener("pointermove", function (event) {
-      if (!enhanced) return;
-      if (!pointerBounds) pointerBounds = stage.getBoundingClientRect();
-      var normalizedX = clamp(((event.clientX - pointerBounds.left) / pointerBounds.width) * 2 - 1, -1, 1);
-      var normalizedY = clamp(((event.clientY - pointerBounds.top) / pointerBounds.height) * 2 - 1, -1, 1);
-      targetTiltX = normalizedY * -1.05;
-      targetTiltY = normalizedX * 1.35;
-      targetParallaxX = normalizedX * 5;
-      targetParallaxY = normalizedY * 4;
-      schedulePaint();
+      pointerInside = true;
+      updateAutoplay();
     }, { passive: true });
 
     stage.addEventListener("pointerleave", function () {
-      pointerBounds = null;
-      targetTiltX = targetTiltY = targetParallaxX = targetParallaxY = 0;
-      if (enhanced) schedulePaint();
+      pointerInside = false;
+      updateAutoplay();
     }, { passive: true });
 
-    if (desktopQuery.addEventListener) {
-      desktopQuery.addEventListener("change", updateMode);
-    } else if (desktopQuery.addListener) {
-      desktopQuery.addListener(updateMode);
+    section.addEventListener("focusin", function () {
+      focusInside = true;
+      updateAutoplay();
+    });
+
+    section.addEventListener("focusout", function () {
+      window.setTimeout(function () {
+        focusInside = section.contains(document.activeElement);
+        updateAutoplay();
+      }, 0);
+    });
+
+    document.addEventListener("visibilitychange", function () {
+      updateAutoplay();
+    });
+
+    window.addEventListener("blur", function () {
+      windowFocused = false;
+      updateAutoplay();
+    });
+
+    window.addEventListener("focus", function () {
+      windowFocused = true;
+      updateAutoplay();
+    });
+
+    window.addEventListener("pagehide", function () {
+      stopAutoplay();
+    });
+
+    window.addEventListener("pageshow", function () {
+      windowFocused = document.hasFocus();
+      updateAutoplay();
+    });
+
+    if ("IntersectionObserver" in window) {
+      var autoplayObserver = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          var entry = entries[i];
+          if (entry.target === section) {
+            sectionVisible = entry.isIntersecting;
+            if (!sectionVisible) {
+              manualLocked = false;
+              stopAutoplay();
+            }
+          } else if (entry.target === stage) {
+            stageVisible = entry.isIntersecting && entry.intersectionRatio >= 0.2;
+          }
+        }
+        updateAutoplay();
+      }, { threshold: [0, 0.2] });
+
+      autoplayObserver.observe(section);
+      autoplayObserver.observe(stage);
     }
 
-    updateMode();
-  }
+    if (motionQuery.addEventListener) {
+      motionQuery.addEventListener("change", updateMotionPreference);
+    } else if (motionQuery.addListener) {
+      motionQuery.addListener(updateMotionPreference);
+    }
 
+    if (autoplayQuery.addEventListener) {
+      autoplayQuery.addEventListener("change", function () {
+        if (!autoplayQuery.matches) stopAutoplay();
+        updateAutoplay();
+      });
+    } else if (autoplayQuery.addListener) {
+      autoplayQuery.addListener(function () {
+        if (!autoplayQuery.matches) stopAutoplay();
+        updateAutoplay();
+      });
+    }
+
+    window.addEventListener("resize", function () {
+      pointerBounds = null;
+    }, { passive: true });
+
+    section.classList.add("is-interactive");
+    setActive(0, false);
+  }
   function setupHeroPointer() {
     var hero = /** @type {HTMLElement|null} */ (document.querySelector(".hero"));
     var field = /** @type {HTMLElement|null} */ (document.querySelector(".hero-cursor-field"));
