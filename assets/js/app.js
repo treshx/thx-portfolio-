@@ -64,57 +64,15 @@
   function renderNavigation() {
     if (!config.navigation) return;
     var html = config.navigation.map(function (/** @type {any} */ item) {
+      if (item.disabled || !item.href) {
+        return '<span class="nav-placeholder" aria-disabled="true">' + escapeHtml(item.label) + '</span>';
+      }
       return '<a href="' + escapeHtml(item.href) + '">' + escapeHtml(item.label) + '</a>';
     }).join("");
     var navs = document.querySelectorAll("[data-nav]");
     for (var i = 0; i < navs.length; i++) {
       navs[i].innerHTML = html;
     }
-  }
-
-  var benefitIcons = [
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="M2 2l7.586 7.586"></path><circle cx="11" cy="11" r="2"></circle></svg>',
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="3" ry="3"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>',
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>',
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>',
-    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>'
-  ];
-
-  function renderBenefits() {
-    var target = document.querySelector("[data-benefits]");
-    if (!target || !config.benefits) return;
-
-    var html = config.benefits.map(function (/** @type {any} */ benefit, /** @type {number} */ index) {
-      var icon = benefitIcons[index] || benefitIcons[0];
-      return [
-        '<article class="benefit reveal" style="--stagger-idx: ' + index + '">',
-        '  <div class="benefit-top">',
-        '    <div class="benefit-icon-box" aria-hidden="true">' + icon + '</div>',
-        '    <span class="benefit-number">0' + (index + 1) + '</span>',
-        '  </div>',
-        '  <h3>' + escapeHtml(benefit.title) + '</h3>',
-        '  <p>' + escapeHtml(benefit.text) + '</p>',
-        '</article>'
-      ].join("\n");
-    }).join("");
-
-    target.innerHTML = html;
-  }
-
-  function renderProcess() {
-    var target = document.querySelector("[data-process]");
-    if (!target || !config.process) return;
-
-    var html = config.process.map(function (/** @type {any} */ step, /** @type {number} */ idx) {
-      return [
-        '<li class="process-item reveal" style="--stagger-idx: ' + idx + '">',
-        '  <span>' + escapeHtml(step.number) + '</span>',
-        '  <div><h3>' + escapeHtml(step.title) + '</h3><p>' + escapeHtml(step.text) + '</p></div>',
-        '</li>'
-      ].join("\n");
-    }).join("");
-
-    target.innerHTML = html;
   }
 
   function renderFaq() {
@@ -415,6 +373,70 @@
     for (var k = 0; k < items.length; k++) {
       observer.observe(items[k]);
     }
+  }
+
+  function setupProcessJourney() {
+    var section = /** @type {HTMLElement|null} */ (document.querySelector("[data-process-journey]"));
+    if (!section) return;
+
+    var steps = /** @type {NodeListOf<HTMLElement>} */ (section.querySelectorAll("[data-process-step]"));
+    var trajectory = /** @type {HTMLElement|null} */ (section.querySelector(".process-trajectory"));
+    if (!steps.length || !trajectory) return;
+
+    var supportsMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: no-preference)").matches;
+    if (!supportsMotion) {
+      section.style.setProperty("--process-progress", "1");
+      for (var i = 0; i < steps.length; i++) steps[i].classList.add("is-active");
+      return;
+    }
+
+    var activeIndex = -1;
+    var frameId = 0;
+
+    function setActive(index) {
+      if (index === activeIndex) return;
+      activeIndex = index;
+      for (var i = 0; i < steps.length; i++) {
+        steps[i].classList.toggle("is-active", i === index);
+      }
+    }
+
+    function updateJourney() {
+      frameId = 0;
+      var viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      var trajectoryRect = trajectory.getBoundingClientRect();
+      var progressStart = viewportHeight * 0.72;
+      var progressEnd = viewportHeight * 0.65; /* era 0.22 — corrigido: o ponto final do path (59% da altura da trajetória) precisa estar visível ao completar */
+      var progressRange = Math.max(trajectoryRect.height + progressStart - progressEnd, 1);
+      var progress = (progressStart - trajectoryRect.top) / progressRange;
+      progress = Math.max(0, Math.min(1, progress));
+      section.style.setProperty("--process-progress", progress.toFixed(4));
+
+      if (trajectoryRect.bottom > 0 && trajectoryRect.top < viewportHeight) {
+        var viewportCenter = viewportHeight * 0.5;
+        var closestIndex = 0;
+        var closestDistance = Infinity;
+        for (var i = 0; i < steps.length; i++) {
+          var stepRect = steps[i].getBoundingClientRect();
+          var stepCenter = stepRect.top + (stepRect.height * 0.5);
+          var distance = Math.abs(stepCenter - viewportCenter);
+          if (distance < closestDistance) {
+            closestDistance = distance;
+            closestIndex = i;
+          }
+        }
+        setActive(closestIndex);
+      }
+    }
+
+    function requestUpdate() {
+      if (!frameId) frameId = window.requestAnimationFrame(updateJourney);
+    }
+
+    setActive(0);
+    updateJourney();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
   }
 
   function setupPossibilities() {
@@ -1142,14 +1164,13 @@
   applyTheme();
   applyMeta();
   renderNavigation();
-  renderBenefits();
-  renderProcess();
   renderFaq();
   renderContent();
   setupHeaderAndScroll();
   setupMenu();
   setupFaq();
   setupReveals();
+  setupProcessJourney();
   setupPossibilities();
   setupHeroPointer();
   setupIntro();

@@ -31,8 +31,8 @@ window.portfolioConfig = {
   },
   navigation: [
     { label: "Projetos", href: "#projetos" },
-    { label: "Serviços", href: "#como-funciona" },
-    { label: "Sobre", href: "#sobre" },
+    { label: "Processo", href: "#processo" },
+    { label: "Sobre", disabled: true },
     { label: "Contato", href: "#contato" },
   ],
   contact: {
@@ -78,18 +78,6 @@ window.portfolioConfig = {
     },
   ],
   upcoming: ["Barbearia", "Clínica", "Profissional autônomo"],
-  benefits: [
-    { title: "Site personalizado", text: "Uma estrutura visual alinhada ao que o seu negócio precisa comunicar, sem começar de um tema genérico." },
-    { title: "Pronto para o celular", text: "Leitura, toque e navegação confortáveis para quem chega pelo WhatsApp, redes sociais ou busca." },
-    { title: "Serviços, contato e localização", text: "As informações importantes ficam organizadas para que o visitante entenda e encontre o que precisa." },
-    { title: "WhatsApp e caminhos de conversão", text: "O contato aparece nos pontos certos, com CTAs claros para iniciar uma conversa com facilidade." },
-    { title: "Ajustes e publicação", text: "Você revisa a proposta antes da aprovação. Depois, a THX prepara o site para a publicação." },
-  ],
-  process: [
-    { number: "01", title: "Conversamos", text: "Entendemos seu negócio, público e objetivo." },
-    { number: "02", title: "Criamos", text: "Adaptamos a experiência visual para a identidade do seu negócio." },
-    { number: "03", title: "Publicamos", text: "Depois da aprovação, colocamos seu novo site no ar." },
-  ],
   difference: {
     title: "Não é só sobre ter um site bonito.",
     text: "É sobre criar uma presença digital que ajude o seu negócio a transmitir confiança, explicar seus serviços com clareza e tornar o próximo contato mais simples.",
