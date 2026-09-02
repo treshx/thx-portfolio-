@@ -32,7 +32,7 @@ window.portfolioConfig = {
   navigation: [
     { label: "Projetos", href: "#projetos" },
     { label: "Processo", href: "#processo" },
-    { label: "Sobre", disabled: true },
+    { label: "Sobre", href: "#sobre" },
     { label: "Contato", href: "#contato" },
   ],
   contact: {
@@ -83,12 +83,42 @@ window.portfolioConfig = {
     text: "É sobre criar uma presença digital que ajude o seu negócio a transmitir confiança, explicar seus serviços com clareza e tornar o próximo contato mais simples.",
   },
   faq: [
-    { question: "Preciso ter fotos profissionais?", answer: "Não necessariamente. Avaliamos o que você já tem e indicamos o melhor caminho visual para apresentar o seu negócio com coerência." },
-    { question: "Vocês criam o conteúdo do site?", answer: "Ajudamos a organizar os textos e as informações para que a mensagem fique clara, objetiva e adequada ao seu público." },
-    { question: "Funciona no celular?", answer: "Sim. A experiência é pensada primeiro para telas menores e depois adaptada para tablets, notebooks e monitores maiores." },
-    { question: "Posso colocar meu WhatsApp?", answer: "Sim. O botão de contato é configurado com o canal que você usa para atender seus clientes." },
-    { question: "Posso pedir alterações?", answer: "Sim. A etapa de aprovação existe justamente para refinar detalhes e alinhar a entrega à sua necessidade." },
-    { question: "Quanto custa um site?", answer: "O investimento depende da estrutura e das necessidades de cada projeto. Depois de entendermos o que você precisa, apresentamos uma proposta." },
+    {
+      question: "Quanto custa um site?",
+      category: "INVESTIMENTO",
+      answer: "O investimento varia de acordo com o tipo de projeto, quantidade de páginas, recursos e nível de personalização. Primeiro entendemos o que o seu negócio precisa e, a partir disso, definimos uma proposta clara antes de começar.",
+    },
+    {
+      question: "Quanto tempo leva para ficar pronto?",
+      category: "PRAZO",
+      answer: "O prazo depende da complexidade e do conteúdo do projeto. Depois de entender sua necessidade, definimos um cronograma para que você saiba como o desenvolvimento será conduzido antes de começarmos.",
+    },
+    {
+      question: "O site funciona bem no celular?",
+      category: "RESPONSIVO",
+      answer: "Sim. O projeto é pensado para funcionar de forma confortável em diferentes tamanhos de tela, incluindo celulares, tablets e computadores.",
+    },
+    {
+      question: "Preciso já ter domínio e hospedagem?",
+      category: "DOMÍNIO",
+      answer: "Não. Se você ainda não possui domínio ou estrutura de publicação, podemos definir isso durante o projeto e orientar o caminho mais adequado para colocar o site no ar.",
+    },
+    {
+      question: "Vocês fazem lojas virtuais?",
+      category: "E-COMMERCE",
+      answer: "Sim. Dependendo da necessidade, podemos desenvolver a presença visual da loja e estruturar a experiência de compra utilizando a solução mais adequada para o projeto.",
+    },
+    {
+      question: "Posso pedir alterações durante o projeto?",
+      category: "ALTERAÇÕES",
+      answer: "Sim. O projeto passa por etapas de revisão para que possamos ajustar conteúdo, detalhes visuais e pontos importantes antes da publicação, respeitando o escopo definido.",
+    },
+    {
+      question: "Como começamos?",
+      category: "PRIMEIRO CONTATO",
+      answer: "Começamos com uma conversa para entender o seu negócio, o objetivo do projeto e o que você deseja construir ou melhorar. A partir disso, definimos juntos a direção mais adequada.",
+      cta: "CONVERSAR SOBRE MEU PROJETO →",
+    },
   ],
   footer: {
     note: "Websites e experiências digitais para negócios que querem comunicar com mais clareza.",

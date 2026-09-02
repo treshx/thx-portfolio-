@@ -80,16 +80,24 @@
     if (!target || !config.faq) return;
 
     var html = config.faq.map(function (/** @type {any} */ item, /** @type {number} */ idx) {
+      var number = ("0" + (idx + 1)).slice(-2);
+      var answerId = "faq-answer-" + number;
+      var questionId = "faq-question-" + number;
       return [
-        '<details class="faq-item reveal" style="--stagger-idx: ' + idx + '">',
-        '  <summary>',
-        '    <span>' + escapeHtml(item.question) + '</span>',
-        '    <span class="faq-icon-wrap" aria-hidden="true">+</span>',
-        '  </summary>',
-        '  <div class="faq-content">',
-        '    <p>' + escapeHtml(item.answer) + '</p>',
+        '<li class="faq-item" data-faq-item>',
+        '  <button class="faq-question" type="button" id="' + questionId + '" aria-expanded="false" aria-controls="' + answerId + '">',
+        '    <span class="faq-row-number">' + number + '</span>',
+        '    <span class="faq-row-question">' + escapeHtml(item.question) + '</span>',
+        '    <span class="faq-row-category">' + escapeHtml(item.category || "") + '</span>',
+        '    <span class="faq-row-arrow" aria-hidden="true">↗</span>',
+        '  </button>',
+        '  <div class="faq-answer" id="' + answerId + '" role="region" aria-labelledby="' + questionId + '" hidden>',
+        '    <div class="faq-answer-inner">',
+        '      <p class="faq-answer-copy">' + escapeHtml(item.answer) + '</p>',
+        item.cta ? '      <p class="faq-answer-cta">' + escapeHtml(item.cta) + '</p>' : '',
+        '    </div>',
         '  </div>',
-        '</details>'
+        '</li>'
       ].join("\n");
     }).join("");
 
@@ -327,20 +335,289 @@
   }
 
   function setupFaq() {
-    var items = /** @type {NodeListOf<HTMLDetailsElement>} */ (document.querySelectorAll(".faq-item"));
+    var section = /** @type {HTMLElement|null} */ (document.querySelector("[data-faq-section]"));
+    var list = /** @type {HTMLElement|null} */ (section && section.querySelector("[data-faq]"));
+    var panel = /** @type {HTMLElement|null} */ (section && section.querySelector("[data-faq-floating]"));
+    var panelCard = /** @type {HTMLElement|null} */ (panel && panel.querySelector("[data-faq-floating-card]"));
+    var panelNumber = /** @type {HTMLElement|null} */ (panel && panel.querySelector("[data-faq-floating-number]"));
+    var panelCategory = /** @type {HTMLElement|null} */ (panel && panel.querySelector("[data-faq-floating-category]"));
+    var panelAnswer = /** @type {HTMLElement|null} */ (panel && panel.querySelector("[data-faq-floating-answer]"));
+    var panelCta = /** @type {HTMLElement|null} */ (panel && panel.querySelector("[data-faq-floating-cta]"));
+    if (!section || !list || !panel || !panelCard || !window.matchMedia) return;
+
+    var items = /** @type {NodeListOf<HTMLElement>} */ (list.querySelectorAll("[data-faq-item]"));
+    if (!items.length) return;
+
+    var floatingQuery = window.matchMedia("(min-width: 900px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)");
+    var reducedQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    var activeItem = /** @type {HTMLElement|null} */ (null);
+    var panelVisible = false;
+    var pointerInside = false;
+    var frameId = 0;
+    var swapTimer = 0;
+    var targetX = 0;
+    var targetY = 0;
+    var currentX = 0;
+    var currentY = 0;
+    var lastPointerX = window.innerWidth * 0.5;
+    var lastPointerY = window.innerHeight * 0.5;
+    var followFactor = 0.13;
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function getButton(item) {
+      return /** @type {HTMLButtonElement|null} */ (item.querySelector(".faq-question"));
+    }
+
+    function getAnswer(item) {
+      return /** @type {HTMLElement|null} */ (item.querySelector(".faq-answer"));
+    }
+
+    function closeInline(item, immediate) {
+      var button = getButton(item);
+      var answer = getAnswer(item);
+      if (!button || !answer) return;
+      button.setAttribute("aria-expanded", "false");
+      answer.classList.remove("is-open");
+      if (answer._faqCloseTimer) window.clearTimeout(answer._faqCloseTimer);
+      if (immediate || reducedQuery.matches) {
+        answer.hidden = true;
+      } else {
+        answer._faqCloseTimer = window.setTimeout(function () {
+          if (!answer.classList.contains("is-open")) answer.hidden = true;
+        }, 310);
+      }
+    }
+
+    function openInline(item) {
+      var button = getButton(item);
+      var answer = getAnswer(item);
+      if (!button || !answer) return;
+
+      for (var i = 0; i < items.length; i++) {
+        if (items[i] !== item) {
+          items[i].classList.remove("is-active");
+          closeInline(items[i], reducedQuery.matches);
+        }
+      }
+
+      if (answer._faqCloseTimer) window.clearTimeout(answer._faqCloseTimer);
+      answer.hidden = false;
+      void answer.offsetHeight;
+      answer.classList.add("is-open");
+      button.setAttribute("aria-expanded", "true");
+      item.classList.add("is-active");
+      activeItem = item;
+    }
+
+    function toggleInline(item) {
+      var button = getButton(item);
+      if (!button) return;
+      if (button.getAttribute("aria-expanded") === "true") {
+        activeItem = null;
+        item.classList.remove("is-active");
+        closeInline(item, reducedQuery.matches);
+      } else {
+        openInline(item);
+      }
+    }
+
+    function applyPanelPosition() {
+      panel.style.setProperty("--faq-panel-x", currentX.toFixed(2) + "px");
+      panel.style.setProperty("--faq-panel-y", currentY.toFixed(2) + "px");
+    }
+
+    function paintPanel() {
+      frameId = 0;
+      if (!panelVisible || document.hidden || !floatingQuery.matches) return;
+
+      currentX += (targetX - currentX) * followFactor;
+      currentY += (targetY - currentY) * followFactor;
+      applyPanelPosition();
+
+      if (Math.abs(targetX - currentX) > 0.1 || Math.abs(targetY - currentY) > 0.1) {
+        requestPanelFrame();
+      }
+    }
+
+    function requestPanelFrame() {
+      if (panelVisible && !document.hidden && floatingQuery.matches && !frameId) {
+        frameId = window.requestAnimationFrame(paintPanel);
+      }
+    }
+
+    function updatePanelTarget(clientX, clientY, snap) {
+      if (!floatingQuery.matches || !activeItem) return;
+      lastPointerX = clientX;
+      lastPointerY = clientY;
+
+      var viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+      var viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      var panelRect = panelCard.getBoundingClientRect();
+      var panelWidth = panelRect.width || 320;
+      var panelHeight = panelRect.height || 220;
+      var edge = 16;
+
+      /* ─ Y: âncora pura no centro da pergunta ativa (sem influência do cursor) ─ */
+      var itemRect = activeItem.getBoundingClientRect();
+      var baseY = itemRect.top + itemRect.height * 0.5 - panelHeight * 0.5;
+
+      /* ─ X: segue o cursor horizontalmente ─ */
+      var x = clientX + 28;
+      if (x + panelWidth + edge > viewportWidth) x = clientX - panelWidth - 28;
+
+      targetX = clamp(x, edge, Math.max(edge, viewportWidth - panelWidth - edge));
+      targetY = clamp(baseY, edge, Math.max(edge, viewportHeight - panelHeight - edge));
+
+      if (snap) {
+        currentX = targetX;
+        currentY = targetY;
+        applyPanelPosition();
+      } else {
+        requestPanelFrame();
+      }
+    }
+
+    function writePanelContent(item) {
+      var number = item.querySelector(".faq-row-number");
+      var category = item.querySelector(".faq-row-category");
+      var answer = item.querySelector(".faq-answer-copy");
+      var cta = item.querySelector(".faq-answer-cta");
+      if (panelNumber) panelNumber.textContent = number ? number.textContent : "";
+      if (panelCategory) panelCategory.textContent = category ? category.textContent : "";
+      if (panelAnswer) panelAnswer.textContent = answer ? answer.textContent : "";
+      if (panelCta) {
+        panelCta.textContent = cta ? cta.textContent : "";
+        panelCta.hidden = !cta;
+      }
+    }
+
+    function swapPanelContent(item, immediate) {
+      if (swapTimer) window.clearTimeout(swapTimer);
+      if (immediate) {
+        writePanelContent(item);
+        return;
+      }
+      panelCard.classList.add("is-swapping");
+      swapTimer = window.setTimeout(function () {
+        writePanelContent(item);
+        panelCard.classList.remove("is-swapping");
+        updatePanelTarget(lastPointerX, lastPointerY, false);
+      }, 90);
+    }
+
+    function activateFloating(item, clientX, clientY, fromPointer) {
+      if (!floatingQuery.matches) return;
+      var firstActivation = !panelVisible;
+      var changedItem = activeItem !== item;
+
+      for (var i = 0; i < items.length; i++) {
+        items[i].classList.toggle("is-active", items[i] === item);
+        closeInline(items[i], true);
+      }
+
+      activeItem = item;
+      if (changedItem) swapPanelContent(item, firstActivation);
+      panelVisible = true;
+      panel.classList.add("is-visible");
+      panel.setAttribute("aria-hidden", "false");
+
+      updatePanelTarget(clientX, clientY, firstActivation);
+    }
+
+    function hideFloating() {
+      panelVisible = false;
+      panel.classList.remove("is-visible");
+      panel.setAttribute("aria-hidden", "true");
+      panelCard.classList.remove("is-swapping");
+      if (swapTimer) {
+        window.clearTimeout(swapTimer);
+        swapTimer = 0;
+      }
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+        frameId = 0;
+      }
+      activeItem = null;
+      for (var i = 0; i < items.length; i++) items[i].classList.remove("is-active");
+    }
+
+    function resetFaqMode() {
+      hideFloating();
+      pointerInside = false;
+      for (var i = 0; i < items.length; i++) closeInline(items[i], true);
+    }
+
     for (var i = 0; i < items.length; i++) {
       (function (item) {
-        item.addEventListener("toggle", function () {
-          if (item.open) {
-            for (var j = 0; j < items.length; j++) {
-              if (items[j] !== item && items[j].open) {
-                items[j].open = false;
-              }
-            }
+        var button = getButton(item);
+        if (!button) return;
+
+        button.addEventListener("pointerenter", function (event) {
+          if (!floatingQuery.matches) return;
+          pointerInside = true;
+          activateFloating(item, event.clientX, event.clientY, true);
+        });
+
+        button.addEventListener("focus", function () {
+          if (floatingQuery.matches && (!pointerInside || !panelVisible)) {
+            activateFloating(item, 0, 0, false);
+          }
+        });
+
+        button.addEventListener("click", function (event) {
+          if (floatingQuery.matches) {
+            event.preventDefault();
+            activateFloating(item, lastPointerX, lastPointerY, pointerInside);
+          } else {
+            toggleInline(item);
+          }
+        });
+
+        button.addEventListener("keydown", function (event) {
+          if (event.key === "Escape" && floatingQuery.matches) {
+            hideFloating();
+            button.blur();
           }
         });
       })(items[i]);
     }
+
+    list.addEventListener("pointermove", function (event) {
+      if (!floatingQuery.matches || !panelVisible) return;
+      pointerInside = true;
+      updatePanelTarget(event.clientX, event.clientY, false);
+    });
+
+    list.addEventListener("pointerleave", function () {
+      pointerInside = false;
+      if (!list.contains(document.activeElement)) hideFloating();
+    });
+
+    list.addEventListener("focusout", function () {
+      window.setTimeout(function () {
+        if (!pointerInside && !list.contains(document.activeElement)) hideFloating();
+      }, 0);
+    });
+
+    window.addEventListener("resize", function () {
+      if (panelVisible && floatingQuery.matches) {
+        updatePanelTarget(lastPointerX, lastPointerY, false);
+      }
+    });
+
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden && frameId) {
+        window.cancelAnimationFrame(frameId);
+        frameId = 0;
+      } else {
+        requestPanelFrame();
+      }
+    });
+
+    if (floatingQuery.addEventListener) floatingQuery.addEventListener("change", resetFaqMode);
   }
 
   function setupReveals() {
@@ -437,6 +714,166 @@
     updateJourney();
     window.addEventListener("scroll", requestUpdate, { passive: true });
     window.addEventListener("resize", requestUpdate);
+  }
+
+  function setupFounderExperience() {
+    var section = /** @type {HTMLElement|null} */ (document.querySelector("[data-founder]"));
+    var visual = /** @type {HTMLElement|null} */ (section && section.querySelector("[data-founder-visual]"));
+    if (!section || !visual || !window.matchMedia) return;
+
+    var motionQuery = window.matchMedia("(min-width: 900px) and (prefers-reduced-motion: no-preference)");
+    var pointerQuery = window.matchMedia("(min-width: 900px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)");
+    var sectionVisible = false;
+    var frameId = 0;
+    var targetX = 0;
+    var targetY = 0;
+    var currentX = 0;
+    var currentY = 0;
+    var currentGlowX = 0;
+    var currentGlowY = 0;
+    var currentPhotoScroll = 0;
+    var currentWordScroll = 0;
+    var pointerFactor = 0.08;
+    var glowFactor = 0.06;
+    var scrollFactor = 0.1;
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function applyMotion() {
+      visual.style.setProperty("--founder-pointer-photo-x", (currentX * 5.5).toFixed(2) + "px");
+      visual.style.setProperty("--founder-pointer-photo-y", (currentY * 5.5).toFixed(2) + "px");
+      visual.style.setProperty("--founder-scroll-photo-y", currentPhotoScroll.toFixed(2) + "px");
+      visual.style.setProperty("--founder-pointer-word-x", (currentX * -11).toFixed(2) + "px");
+      visual.style.setProperty("--founder-pointer-word-y", (currentY * -11).toFixed(2) + "px");
+      visual.style.setProperty("--founder-scroll-word-y", currentWordScroll.toFixed(2) + "px");
+      visual.style.setProperty("--founder-pointer-glow-x", (currentGlowX * 36).toFixed(2) + "px");
+      visual.style.setProperty("--founder-pointer-glow-y", (currentGlowY * 28).toFixed(2) + "px");
+    }
+
+    function resetMotion() {
+      targetX = 0;
+      targetY = 0;
+      currentX = 0;
+      currentY = 0;
+      currentGlowX = 0;
+      currentGlowY = 0;
+      currentPhotoScroll = 0;
+      currentWordScroll = 0;
+      applyMotion();
+    }
+
+    function paint() {
+      frameId = 0;
+      if (!sectionVisible || document.hidden || !motionQuery.matches) {
+        if (!motionQuery.matches) resetMotion();
+        return;
+      }
+
+      var viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+      var sectionRect = section.getBoundingClientRect();
+      var sectionCenter = sectionRect.top + (sectionRect.height * 0.5);
+      var viewportCenter = viewportHeight * 0.5;
+      var travel = Math.max((viewportHeight + sectionRect.height) * 0.5, 1);
+      var scrollRatio = clamp((viewportCenter - sectionCenter) / travel, -1, 1);
+      var targetPhotoScroll = scrollRatio * 6.5;
+      var targetWordScroll = scrollRatio * -10;
+
+      if (!pointerQuery.matches) {
+        targetX = 0;
+        targetY = 0;
+      }
+
+      currentX += (targetX - currentX) * pointerFactor;
+      currentY += (targetY - currentY) * pointerFactor;
+      currentGlowX += (targetX - currentGlowX) * glowFactor;
+      currentGlowY += (targetY - currentGlowY) * glowFactor;
+      currentPhotoScroll += (targetPhotoScroll - currentPhotoScroll) * scrollFactor;
+      currentWordScroll += (targetWordScroll - currentWordScroll) * scrollFactor;
+      applyMotion();
+
+      var pointerDelta = Math.max(
+        Math.abs(targetX - currentX),
+        Math.abs(targetY - currentY),
+        Math.abs(targetX - currentGlowX),
+        Math.abs(targetY - currentGlowY)
+      );
+      var scrollDelta = Math.max(
+        Math.abs(targetPhotoScroll - currentPhotoScroll),
+        Math.abs(targetWordScroll - currentWordScroll)
+      );
+      if (pointerDelta > 0.001 || scrollDelta > 0.01) requestPaint();
+    }
+
+    function requestPaint() {
+      if (sectionVisible && !document.hidden && motionQuery.matches && !frameId) {
+        frameId = window.requestAnimationFrame(paint);
+      }
+    }
+
+    function handlePointerMove(event) {
+      if (!sectionVisible || !pointerQuery.matches) return;
+      var rect = visual.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      targetX = clamp(((event.clientX - rect.left) / rect.width - 0.5) * 2, -1, 1);
+      targetY = clamp(((event.clientY - rect.top) / rect.height - 0.5) * 2, -1, 1);
+      requestPaint();
+    }
+
+    function handlePointerLeave() {
+      targetX = 0;
+      targetY = 0;
+      requestPaint();
+    }
+
+    function handleVisibility() {
+      if (document.hidden && frameId) {
+        window.cancelAnimationFrame(frameId);
+        frameId = 0;
+      } else {
+        requestPaint();
+      }
+    }
+
+    function handleMotionChange() {
+      if (!motionQuery.matches) {
+        if (frameId) {
+          window.cancelAnimationFrame(frameId);
+          frameId = 0;
+        }
+        resetMotion();
+      } else {
+        requestPaint();
+      }
+    }
+
+    if ("IntersectionObserver" in window) {
+      var observer = new IntersectionObserver(function (entries) {
+        sectionVisible = Boolean(entries[0] && entries[0].isIntersecting);
+        if (sectionVisible) {
+          requestPaint();
+        } else {
+          if (frameId) {
+            window.cancelAnimationFrame(frameId);
+            frameId = 0;
+          }
+          resetMotion();
+        }
+      }, { threshold: 0, rootMargin: "160px 0px" });
+      observer.observe(section);
+    } else {
+      sectionVisible = true;
+      requestPaint();
+    }
+
+    visual.addEventListener("pointerenter", handlePointerMove);
+    visual.addEventListener("pointermove", handlePointerMove);
+    visual.addEventListener("pointerleave", handlePointerLeave);
+    window.addEventListener("scroll", requestPaint, { passive: true });
+    window.addEventListener("resize", handleMotionChange);
+    document.addEventListener("visibilitychange", handleVisibility);
+    if (motionQuery.addEventListener) motionQuery.addEventListener("change", handleMotionChange);
   }
 
   function setupPossibilities() {
@@ -1171,6 +1608,7 @@
   setupFaq();
   setupReveals();
   setupProcessJourney();
+  setupFounderExperience();
   setupPossibilities();
   setupHeroPointer();
   setupIntro();
