@@ -3244,18 +3244,19 @@ button {
   }
 
   .process-trajectory {
+    --process-mobile-rail-x: 10px;
     margin-top: 52px;
     padding-left: 36px;
     padding-bottom: 20px; /* espaço final para a linha vertical não terminar dentro do último step */
   }
 
   .process-trajectory::before,
-  .process-trajectory::after { left: 10px; }
+  .process-trajectory::after { left: var(--process-mobile-rail-x); }
   .process-steps { gap: 46px; }
   .process-step article { padding-top: 16px; }
 
   .process-step article::before {
-    left: -31px;
+    left: calc(var(--process-mobile-rail-x) - 36px - 4px);
     width: 8px;
     height: 8px;
   }
@@ -3290,20 +3291,15 @@ button {
 
   .process-tags li:not(:last-child)::after { margin: 0 6px; }
   .process-visual {
-    width: 140px;
-    height: 100px;
+    width: 150px;
+    height: 108px;
+    transform: scale(0.9);
+    transform-origin: top left;
   }
 
-  .process-brief-connection--4,
-  .process-brief-fragment--4,
-  .process-structure-block--footer,
-  .process-create-copy,
-  .process-publish-signal--3 {
-    display: none;
+  .process-step.is-active .process-visual {
+    transform: translateX(3px) scale(0.9);
   }
-
-  .process-publish-node { left: 104px; }
-  .process-publish-signal { left: 111px; }
 }
 
 /* ==========================================================================
@@ -4269,6 +4265,7 @@ button {
   .contact-final-heading h2 {
     font-size: clamp(39px, 11.4vw, 54px);
     line-height: 1.02;
+    text-wrap: balance;
   }
 
   .contact-final-heading h2 br {
